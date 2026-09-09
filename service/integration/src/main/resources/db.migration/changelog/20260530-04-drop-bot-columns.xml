@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- LidBot/Telegram integratsiyasi olib tashlandi → bot ustunlar kerakmas. -->
+    <changeSet id="20260530-04-drop-bot-columns" author="qodiriy">
+        <sql>
+            ALTER TABLE integration.sms_providers DROP COLUMN IF EXISTS token;
+            ALTER TABLE integration.sms_providers DROP COLUMN IF EXISTS chat_id;
+            ALTER TABLE integration.sms_providers DROP COLUMN IF EXISTS username;
+        </sql>
+    </changeSet>
+</databaseChangeLog>

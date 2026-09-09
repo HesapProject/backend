@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <changeSet id="20260530-05-create-integration-credential" author="qodiriy">
+        <sql>
+            CREATE TABLE IF NOT EXISTS integration.integration_credential (
+                id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                provider           VARCHAR(50)  NOT NULL,
+                login              TEXT         NOT NULL,
+                password           TEXT         NOT NULL,
+                base_url           TEXT,
+                deleted            BOOLEAN      DEFAULT FALSE NOT NULL,
+                created_date       TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE UNIQUE INDEX IF NOT EXISTS uq_integration_credential_provider_active
+                ON integration.integration_credential (provider)
+                WHERE deleted = false;
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260530-05-create-scoring-history" author="qodiriy">
+        <sql>
+            CREATE TABLE IF NOT EXISTS integration.scoring_history (
+                id              UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                user_id         UUID,
+                card_id         UUID,
+                created_at      TIMESTAMP,
+                type            TEXT,
+                response        JSONB,
+                uzcard          JSONB,
+                humo            JSONB,
+                plum_scoring_id INTEGER,
+                status          TEXT
+            );
+        </sql>
+    </changeSet>
+
+    <!-- Mavjud ma'lumotlarni billing → integration ga nusxalaymiz. -->
+    <changeSet id="20260530-05-copy-integration-credential-data" author="qodiriy">
+        <preConditions onFail="MARK_RAN">
+            <tableExists schemaName="billing" tableName="integration_credential"/>
+        </preConditions>
+        <sql>
+            INSERT INTO integration.integration_credential
+                (id, provider, login, password, base_url, deleted, created_date, last_modified_date)
+            SELECT id, provider, login, password, base_url, deleted, created_date, last_modified_date
+            FROM billing.integration_credential
+            ON CONFLICT (id) DO NOTHING;
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260530-05-copy-scoring-history-data" author="qodiriy">
+        <preConditions onFail="MARK_RAN">
+            <tableExists schemaName="billing" tableName="scoring_history"/>
+        </preConditions>
+        <sql>
+            -- Bilan columnlar mos kelmasa ham SELECT INTO ma'lum colnlar bilan
+            INSERT INTO integration.scoring_history (id, user_id, created_at, type, response)
+            SELECT id, user_id, created_at, type, response
+            FROM billing.scoring_history
+            ON CONFLICT (id) DO NOTHING;
+        </sql>
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- KATM (Kredit-axborot tahliliy markazi) credential'lari — singleton.
+         plum_setting bilan bir xil struktura. -->
+    <changeSet id="20260531-01-create-katm-setting-table" author="qodiriy">
+        <sql>
+            CREATE TABLE IF NOT EXISTS integration.katm_setting (
+                id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                base_url           TEXT NOT NULL,
+                login              TEXT NOT NULL,
+                password           TEXT,
+                created_date       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+        </sql>
+    </changeSet>
+
+    <!-- KATM kredit tarixi so'rovlari va hisobotlari. report_base64 — XML kredit
+         tarixi Base64'da; scheduler get-report orqali to'ldiradi. -->
+    <changeSet id="20260531-01-create-katm-report-table" author="qodiriy">
+        <sql>
+            CREATE TABLE IF NOT EXISTS integration.katm_report (
+                id              UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                user_id         UUID,
+                pinfl           TEXT,
+                p_client_id     TEXT,
+                p_claim_id      TEXT,
+                p_token         TEXT,
+                language        TEXT,
+                status          TEXT,
+                amount          NUMERIC,
+                is_free         BOOLEAN,
+                result_message  TEXT,
+                report_base64   TEXT,
+                request         JSONB,
+                response        JSONB,
+                created_at      TIMESTAMP,
+                completed_at    TIMESTAMP
+            );
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260531-01-create-katm-report-indexes" author="qodiriy">
+        <sql>
+            CREATE INDEX IF NOT EXISTS idx_katm_report_status ON integration.katm_report (status);
+            CREATE INDEX IF NOT EXISTS idx_katm_report_user_id ON integration.katm_report (user_id);
+            CREATE INDEX IF NOT EXISTS idx_katm_report_pinfl ON integration.katm_report (pinfl);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

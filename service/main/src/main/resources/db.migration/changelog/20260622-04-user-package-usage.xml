@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Eski user_used_document (count/used, ishlatilmagan) o'rniga soddalashtirilgan
+         foydalanish jurnali: har tuzilgan shartnoma uchun bitta qator. -->
+    <changeSet id="20260622-04-user-package-usage" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            DROP TABLE IF EXISTS "user".user_used_document CASCADE;
+
+            CREATE TABLE IF NOT EXISTS "user".user_package_usage (
+                id              UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                user_in         TEXT,
+                user_package_id UUID,
+                template_id     UUID,
+                contract_id     UUID,
+                status          TEXT,
+                created_date    TIMESTAMP DEFAULT now()
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_upu_package_template
+                ON "user".user_package_usage (user_package_id, template_id, status);
+            CREATE INDEX IF NOT EXISTS idx_upu_contract
+                ON "user".user_package_usage (contract_id);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Shablon imkoniyatlariga guvohlik toggle'i (witness_enabled). Mahsulotlar/To'lovlardek.
+         Barcha mavjud shablonlarga yoqiladi (DEFAULT TRUE → mavjud qatorlar ham TRUE). -->
+    <changeSet id="20260627-01-template-witness-enabled" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE document.template ADD COLUMN IF NOT EXISTS witness_enabled BOOLEAN DEFAULT TRUE;
+            UPDATE document.template SET witness_enabled = TRUE WHERE witness_enabled IS NULL;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

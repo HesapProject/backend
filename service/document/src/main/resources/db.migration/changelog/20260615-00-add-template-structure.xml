@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Blok-konstruktor manbasi: shablon strukturasi (blok JSON). template_data
+         (JRXML) shu strukturadan generatsiya qilinadi. NULL bo'lsa — eski raw-JRXML
+         shablon (struktura yo'q), generate/preview avvalgidek template_data dan ishlaydi. -->
+    <changeSet id="20260615-00-add-template-structure" author="qodiriy">
+        <sql>
+            ALTER TABLE document.template ADD COLUMN template_structure TEXT;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

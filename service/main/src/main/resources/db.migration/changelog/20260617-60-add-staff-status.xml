@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Staff so'rov oqimi: status (PENDING/ACCEPTED/REJECTED). Mavjud yozuvlar
+         to'g'ridan-to'g'ri qo'shilgan deb hisoblanadi -> ACCEPTED. -->
+    <changeSet id="20260617-60-add-staff-status" author="qodiriy">
+        <sql>
+            ALTER TABLE "user".staff ADD COLUMN IF NOT EXISTS status VARCHAR(16) NOT NULL DEFAULT 'ACCEPTED';
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

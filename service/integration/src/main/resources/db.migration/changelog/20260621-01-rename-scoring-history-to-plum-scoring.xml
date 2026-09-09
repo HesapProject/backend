@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- scoring_history → plum_scoring; user_id (UUID) → user_in (PINFL/STIR).
+         user_in "user"."user"'dan backfill, so'ng eski user_id drop. -->
+    <changeSet id="20260621-01-rename-scoring-history-to-plum-scoring" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE integration.scoring_history RENAME TO plum_scoring;
+            ALTER TABLE integration.plum_scoring ADD COLUMN IF NOT EXISTS user_in TEXT;
+
+            UPDATE integration.plum_scoring s
+               SET user_in = (SELECT COALESCE(u.pinfl, u.tin) FROM "user"."user" u WHERE u.id = s.user_id)
+             WHERE s.user_id IS NOT NULL;
+
+            ALTER TABLE integration.plum_scoring DROP COLUMN IF EXISTS user_id;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

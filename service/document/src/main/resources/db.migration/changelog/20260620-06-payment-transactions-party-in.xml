@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- payment_transactions (PaidSchedule): buyer_id/seller_id (UUID) → buyer_in/seller_in (PINFL),
+         PaymentEntity bilan izchil. contracts.buyer_in/seller_in'dan backfill. -->
+    <changeSet id="20260620-06-payment-transactions-party-in" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE document.payment_transactions ADD COLUMN IF NOT EXISTS buyer_in TEXT;
+            ALTER TABLE document.payment_transactions ADD COLUMN IF NOT EXISTS seller_in TEXT;
+
+            UPDATE document.payment_transactions pt
+               SET buyer_in = c.buyer_in,
+                   seller_in = c.seller_in
+              FROM document.contracts c
+             WHERE c.id = pt.document_id;
+
+            ALTER TABLE document.payment_transactions DROP COLUMN IF EXISTS buyer_id;
+            ALTER TABLE document.payment_transactions DROP COLUMN IF EXISTS seller_id;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

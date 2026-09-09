@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- activity_log: user_id (uuid) -> actor_in (text, PINFL/STIR). Jadval yangi (0 qator). -->
+    <changeSet id="20260622-01-activity-log-user-id-to-actor-in" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE IF EXISTS "log".activity_log ADD COLUMN IF NOT EXISTS actor_in TEXT;
+            ALTER TABLE IF EXISTS "log".activity_log DROP COLUMN IF EXISTS user_id;
+            DROP INDEX IF EXISTS "log".idx_activity_log_user_id;
+            CREATE INDEX IF NOT EXISTS idx_activity_log_actor_in ON "log".activity_log (actor_in);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

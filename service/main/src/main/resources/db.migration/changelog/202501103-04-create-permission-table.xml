@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+    <changeSet id="alter-tables" author="isoq">
+        <sql>
+            CREATE TABLE "user".permission (
+               id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+               user_id             UUID NOT NULL,
+               company_id          UUID NOT NULL,
+               permissions         TEXT[] NOT NULL,
+               deleted             BOOLEAN DEFAULT FALSE,
+               created_date        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+               last_modified_date  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+
+        </sql>
+    </changeSet>
+</databaseChangeLog>

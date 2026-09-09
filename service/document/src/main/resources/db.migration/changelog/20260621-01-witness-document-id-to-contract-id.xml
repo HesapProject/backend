@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- contract_witness.document_id → contract_id (boshqa jadvallar bilan izchillik). -->
+    <changeSet id="20260621-01-witness-document-id-to-contract-id" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE document.contract_witness RENAME COLUMN document_id TO contract_id;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

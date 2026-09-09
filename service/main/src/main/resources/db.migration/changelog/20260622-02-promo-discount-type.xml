@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- promo: type → usage_type; amount → discount_amount; + discount_type (PERCENT/FIXED). -->
+    <changeSet id="20260622-02-promo-discount-type" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE "user".promo RENAME COLUMN type TO usage_type;
+            ALTER TABLE "user".promo RENAME COLUMN amount TO discount_amount;
+            ALTER TABLE "user".promo ADD COLUMN IF NOT EXISTS discount_type TEXT;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

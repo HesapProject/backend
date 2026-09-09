@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+  <changeSet id="20260217-01-alter-document-add-columns" author="elmurod">
+    <sql>
+      ALTER TABLE "document".document
+      ADD COLUMN IF NOT EXISTS buyer_status VARCHAR(50),
+      ADD COLUMN IF NOT EXISTS seller_status VARCHAR(50),
+      ADD COLUMN IF NOT EXISTS created_by_user_id UUID,
+      ADD COLUMN IF NOT EXISTS type VARCHAR(50);
+    </sql>
+  </changeSet>
+
+  <changeSet id="20260217-02-create-document-witness-table" author="elmurod">
+    <sql>
+      CREATE TABLE IF NOT EXISTS "document".document_witness (
+          id                     UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+          document_id            UUID NOT NULL,
+          witness_id             UUID NOT NULL,
+          status                 VARCHAR(50),
+          created_date           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          last_modified_date     TIMESTAMP
+      );
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>

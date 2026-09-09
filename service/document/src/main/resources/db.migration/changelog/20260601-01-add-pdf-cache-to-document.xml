@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Hujjat PDF cache: birinchi generate paytida CDN'ga saqlanadi.
+         pdf_generated_at < last_modified_date bo'lsa, qayta generate. -->
+    <changeSet id="20260601-01-add-pdf-cache-to-document" author="qodiriy">
+        <sql>
+            ALTER TABLE document.document ADD COLUMN pdf_url TEXT;
+            ALTER TABLE document.document ADD COLUMN pdf_generated_at TIMESTAMP;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

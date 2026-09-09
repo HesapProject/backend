@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Admin'lar AdminEntity'dan UserEntity'ga ko'chiriladi. user.user'ga login/password
+         qo'shiladi; "user".admin yozuvlari user.user'ga (type=SUPER_ADMIN|ADMIN) ko'chadi.
+         Eski "user".admin jadvali DROP QILINMAYDI (zaxira; keyingi relizda). id saqlanadi —
+         mavjud admin tokenlari (adminId=userId) ishlashda davom etadi. -->
+
+    <changeSet id="20260616-20-add-login-password-to-user" author="qodiriy">
+        <sql>
+            ALTER TABLE "user"."user" ADD COLUMN IF NOT EXISTS login    VARCHAR(255);
+            ALTER TABLE "user"."user" ADD COLUMN IF NOT EXISTS password TEXT;
+            CREATE UNIQUE INDEX IF NOT EXISTS user_login_uniq
+                ON "user"."user"(login) WHERE login IS NOT NULL AND deleted = false;
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260616-21-copy-admins-to-user" author="qodiriy">
+        <preConditions onFail="MARK_RAN">
+            <tableExists schemaName="user" tableName="admin"/>
+        </preConditions>
+        <sql>
+            INSERT INTO "user"."user"
+                (id, login, password, first_name, type, role, is_verified, is_active,
+                 deleted, created_date, last_modified_date, version)
+            SELECT a.id, a.login, a.password, a.full_name,
+                   CASE WHEN a.role = 'SUPER_ADMIN' THEN 'SUPER_ADMIN' ELSE 'ADMIN' END,
+                   'ADMIN', TRUE, COALESCE(a.is_active, TRUE),
+                   FALSE, COALESCE(a.created_date, NOW()), NOW(), 0
+            FROM "user".admin a
+            WHERE a.deleted = FALSE
+            ON CONFLICT (id) DO NOTHING;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Eski staff jadvalini almashtirish: white_list_type -> staff (Permission[] +
+         company/user), unga type + status + created_by/updated_by qo'shish. -->
+    <changeSet id="20260618-30-drop-old-staff" author="qodiriy">
+        <preConditions onFail="MARK_RAN">
+            <tableExists schemaName="user" tableName="staff"/>
+        </preConditions>
+        <sql>DROP TABLE "user".staff;</sql>
+    </changeSet>
+
+    <changeSet id="20260618-30-rename-white-list-type-to-staff" author="qodiriy">
+        <preConditions onFail="MARK_RAN">
+            <tableExists schemaName="user" tableName="white_list_type"/>
+        </preConditions>
+        <sql>ALTER TABLE "user".white_list_type RENAME TO staff;</sql>
+    </changeSet>
+
+    <changeSet id="20260618-30-add-staff-columns" author="qodiriy">
+        <sql>
+            ALTER TABLE "user".staff ADD COLUMN IF NOT EXISTS type VARCHAR(32);
+            ALTER TABLE "user".staff ADD COLUMN IF NOT EXISTS status VARCHAR(16) NOT NULL DEFAULT 'ACCEPTED';
+            ALTER TABLE "user".staff ADD COLUMN IF NOT EXISTS created_by UUID;
+            ALTER TABLE "user".staff ADD COLUMN IF NOT EXISTS updated_by UUID;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

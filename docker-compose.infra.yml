@@ -1,0 +1,53 @@
+name: business-infra
+
+services:
+  postgres:
+    container_name: postgres-local
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-hesap}
+      POSTGRES_USER: ${POSTGRES_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:}
+      DB_SCHEMAS: ${DB_SCHEMAS:-user billing log file document notification}
+      TZ: Asia/Tashkent
+    ports:
+      - "5435:5432"
+    networks:
+      - hesap-local
+    volumes:
+      - ./local-data/postgres:/var/lib/postgresql/data
+      - ./create_schemas.sh:/docker-entrypoint-initdb.d/01-create-schemas.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d hesap"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  businessmq:
+    container_name: businessmq-local
+    image: rabbitmq:4.0.5-management
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBIT_USERNAME:-messaging}
+      RABBITMQ_DEFAULT_PASS: ${RABBIT_PASSWORD:}
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: -rabbit disk_free_limit 4337418240 -rabbit memory_high_watermark 0.98
+      TZ: Asia/Tashkent
+    ports:
+      - "35672:5672"
+      - "25672:15672"
+    networks:
+      - hesap-local
+    volumes:
+      - ./local-data/rabbitmq:/var/lib/rabbitmq
+      - ./rabbit_enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+networks:
+  hesap-local:
+    name: hesap-local
+    driver: bridge

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- notices.id ustunida DEFAULT ham, PRIMARY KEY ham yo'q edi (boshqa jadvallardan
+         farqli — create faqat `id UUID NOT NULL` qilgan). R2DBC @Id null bo'lsa INSERT
+         id'siz ketib "null value in column id" xatosi berardi (talabnoma 500).
+         Boshqa jadvallardek uuid_generate_v4() default + PRIMARY KEY qo'yamiz. -->
+    <changeSet id="20260621-00-notices-id-default" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE document.notices ALTER COLUMN id SET DEFAULT uuid_generate_v4();
+        </sql>
+    </changeSet>
+
+    <!-- PRIMARY KEY yo'q bo'lsa qo'shamiz (alohida changeSet — failOnError=false bilan,
+         agar allaqachon bo'lsa o'tkazib yuboramiz). -->
+    <changeSet id="20260621-01-notices-id-pk" author="qodiriy" failOnError="false">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE document.notices ADD PRIMARY KEY (id);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

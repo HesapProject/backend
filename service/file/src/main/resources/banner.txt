@@ -1,0 +1,10 @@
+${AnsiStyle.BOLD}${AnsiColor.BLUE}
+,------.,--.,--.   ,------.
+|  .---'|  ||  |   |  .---'
+|  `--, |  ||  |   |  `--,
+|  |`   |  ||  '--.|  `---.
+`--'    `--'`-----'`------'
+${AnsiStyle.NORMAL}${AnsiColor.BRIGHT_GREEN}
+                                   name: ${info.app.name}
+                                version: ${info.app.version}
+                    spring-boot version: ${spring-boot.version}

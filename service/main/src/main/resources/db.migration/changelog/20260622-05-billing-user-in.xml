@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Billing jadvallari endi user_id (UUID) o'rniga user_in (PINFL/STIR) bilan bog'lanadi;
+         purchases'ga promo qo'shildi; purchase_history butunlay olib tashlandi.
+
+         IDEMPOTENT: backfill UPDATE'lari faqat user_id ustuni HALI MAVJUD bo'lsa ishlaydi.
+         Avvalgi versiya non-idempotent edi — UPDATE user_id'ga tayanardi, keyin user_id'ni
+         o'chirardi; changeset yarmida fail bo'lsa (masalan purchase_history CASCADE'siz drop)
+         retry'da "column user_id does not exist" bilan abadiy crashloop bo'lar edi.
+         splitStatements=false — DO $$..$$ bloklari ichidagi ';' bo'linib ketmasligi uchun. -->
+    <changeSet id="20260622-05-billing-user-in" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql splitStatements="false">
+            -- user_package: user_id → user_in (PINFL'dan backfill, faqat user_id bor bo'lsa)
+            ALTER TABLE "user".user_package ADD COLUMN IF NOT EXISTS user_in TEXT;
+            DO $$
+            BEGIN
+                IF EXISTS (SELECT 1 FROM information_schema.columns
+                           WHERE table_schema = 'user' AND table_name = 'user_package'
+                             AND column_name = 'user_id') THEN
+                    UPDATE "user".user_package up SET user_in = u.pinfl
+                        FROM "user"."user" u
+                        WHERE u.id = up.user_id AND up.user_in IS NULL;
+                END IF;
+            END $$;
+            DROP INDEX IF EXISTS "user".user_idx_user_package_user;
+            ALTER TABLE "user".user_package DROP COLUMN IF EXISTS user_id;
+            CREATE INDEX IF NOT EXISTS user_idx_user_package_in
+                ON "user".user_package (user_in);
+
+            -- purchases: user_id → user_in + promo
+            ALTER TABLE "user".purchases ADD COLUMN IF NOT EXISTS user_in TEXT;
+            ALTER TABLE "user".purchases ADD COLUMN IF NOT EXISTS promo    TEXT;
+            DO $$
+            BEGIN
+                IF EXISTS (SELECT 1 FROM information_schema.columns
+                           WHERE table_schema = 'user' AND table_name = 'purchases'
+                             AND column_name = 'user_id') THEN
+                    UPDATE "user".purchases p SET user_in = u.pinfl
+                        FROM "user"."user" u
+                        WHERE u.id = p.user_id AND p.user_in IS NULL;
+                END IF;
+            END $$;
+            DROP INDEX IF EXISTS "user".user_idx_purchases_user;
+            ALTER TABLE "user".purchases DROP COLUMN IF EXISTS user_id;
+            CREATE INDEX IF NOT EXISTS user_idx_purchases_in
+                ON "user".purchases (user_in);
+
+            -- purchase_history — butunlay o'chirildi (bog'liq obyektlar bilan)
+            DROP TABLE IF EXISTS "user".purchase_history CASCADE;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

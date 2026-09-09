@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Guvohlik so'rovlari alohida jadvalga (witness_requests). Guvohlikka chaqirilganda
+         shu yerga PENDING bo'lib tushadi; qabul qilingach `witnesses`ga yoziladi va
+         `witnesses`dan status olib tashlanadi (witnesses = faqat qabul qilingan guvohlar). -->
+    <changeSet id="20260627-00-witness-requests" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            CREATE TABLE IF NOT EXISTS document.witness_requests (
+                id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                contract_id         UUID NOT NULL,
+                witness_id          UUID NOT NULL,
+                status              VARCHAR(50),
+                created_date        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date  TIMESTAMP
+            );
+
+            -- Mavjud guvohlarni (status bilan) witness_requests'ga ko'chiramiz.
+            INSERT INTO document.witness_requests
+                (id, contract_id, witness_id, status, created_date, last_modified_date)
+            SELECT id, contract_id, witness_id, status, created_date, last_modified_date
+              FROM document.witnesses
+            ON CONFLICT (id) DO NOTHING;
+
+            -- witnesses endi faqat qabul qilingan guvohlar; qolganlari o'chadi, status ustuni drop.
+            DELETE FROM document.witnesses WHERE status IS DISTINCT FROM 'ACCEPTED';
+            ALTER TABLE document.witnesses DROP COLUMN IF EXISTS status;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

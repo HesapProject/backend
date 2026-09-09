@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+  <changeSet id="20260218-01-alter-document-add-json-content" author="elmurod">
+    <sql>
+
+        ALTER TABLE "document".document
+            ADD COLUMN IF NOT EXISTS template_id UUID;
+        CREATE TABLE document.notice
+        (
+            id                 UUID        NOT NULL,
+            document_id        UUID        NOT NULL,
+            buyer_id           UUID,
+            seller_id          UUID,
+            name_uz            TEXT,
+            name_ru            TEXT,
+            name_en            TEXT,
+            number             INTEGER,
+            status             TEXT,
+            template_json      TEXT,
+            created_by UUID,
+            deleted            BOOLEAN              DEFAULT FALSE,
+            created_date       TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            last_modified_date TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>

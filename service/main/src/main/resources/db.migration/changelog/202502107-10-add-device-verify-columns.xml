@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+    
+    <!-- Add phone and is_verify_device columns to device table for verify flow -->
+    <changeSet id="add-device-verify-columns" author="system">
+        <comment>
+            Add phone and is_verify_device columns to device table.
+            This supports the new verify flow where:
+            1. /verify creates a temporary device with phone stored
+            2. /sign-up uses verify token to create user and replaces temporary device
+        </comment>
+        
+        <sql>
+            -- Add phone column to store phone number during verify flow
+            ALTER TABLE "user".device 
+            ADD COLUMN IF NOT EXISTS phone TEXT;
+            
+            -- Add is_verify_device flag to distinguish temporary verify devices
+            ALTER TABLE "user".device 
+            ADD COLUMN IF NOT EXISTS is_verify_device BOOLEAN DEFAULT FALSE;
+            
+            -- Create index for verify device lookups
+            CREATE INDEX IF NOT EXISTS idx_device_phone_verify 
+            ON "user".device(phone) 
+            WHERE is_verify_device = TRUE AND deleted = FALSE;
+            
+            CREATE INDEX IF NOT EXISTS idx_device_id_verify 
+            ON "user".device(id) 
+            WHERE is_verify_device = TRUE AND deleted = FALSE;
+        </sql>
+    </changeSet>
+</databaseChangeLog>

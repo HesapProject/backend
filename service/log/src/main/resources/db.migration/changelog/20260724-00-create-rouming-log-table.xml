@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Rouming (Factura Provider — ЭСФ) draft yuborish loglari (monitoring).
+         turanix_log bilan o'xshash struktura. -->
+    <changeSet id="20260724-00-create-rouming-log-table" author="qodiriy">
+        <sql>
+            CREATE TABLE IF NOT EXISTS log.rouming_log (
+                id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                contract_id        UUID,
+                contract_no        TEXT,
+                factura_no         TEXT,
+                seller_tin         TEXT,
+                buyer_tin          TEXT,
+                status             TEXT,
+                error_message      TEXT,
+                request            TEXT,
+                response           TEXT,
+                request_time       TIMESTAMP,
+                created_date       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE INDEX IF NOT EXISTS idx_rouming_log_created ON log.rouming_log (created_date DESC);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Umumlashgan scoring jurnali — har scoring (Plum va kelajakda boshqalar) uchun
+         bitta qator.          Bu USAGE (kvota) EMAS — bitta odamning barcha scoringlari (kim so'ragan/kim
+         scoring qilingan) bir joyda jamlanadi. Kelajakda boshqa scoring turlari ham. -->
+    <changeSet id="20260704-20-user-scoring" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql splitStatements="false">
+            CREATE TABLE IF NOT EXISTS "user".user_scoring (
+                id            UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                scoring_id    TEXT,           -- provider scoring id (integration plum_scoring id)
+                scoring_type  TEXT,           -- HESAP | KATM | PAYMENT (karta skoringi)
+                requester_in  TEXT,           -- kim so'radi (PINFL/STIR)
+                user_in       TEXT,           -- kim scoring qilindi (karta egasi PINFL/STIR)
+                created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE INDEX IF NOT EXISTS idx_user_scoring_requester
+                ON "user".user_scoring (requester_in, scoring_type);
+        </sql>
+    </changeSet>
+</databaseChangeLog>

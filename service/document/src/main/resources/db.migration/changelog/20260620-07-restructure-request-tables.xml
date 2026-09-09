@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- payment_requests va delay_requests (bir xil): document_id→contract_id,
+         payment_schedule_id→payment_id, buyer_in/seller_in (contracts'dan backfill),
+         user_id va type ustunlari drop. -->
+    <changeSet id="20260620-07-restructure-request-tables" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE document.payment_requests RENAME COLUMN document_id TO contract_id;
+            ALTER TABLE document.payment_requests RENAME COLUMN payment_schedule_id TO payment_id;
+            ALTER TABLE document.payment_requests ADD COLUMN IF NOT EXISTS buyer_in TEXT;
+            ALTER TABLE document.payment_requests ADD COLUMN IF NOT EXISTS seller_in TEXT;
+            UPDATE document.payment_requests r
+               SET buyer_in = c.buyer_in, seller_in = c.seller_in
+              FROM document.contracts c WHERE c.id = r.contract_id;
+            ALTER TABLE document.payment_requests DROP COLUMN IF EXISTS user_id;
+            ALTER TABLE document.payment_requests DROP COLUMN IF EXISTS type;
+
+            ALTER TABLE document.delay_requests RENAME COLUMN document_id TO contract_id;
+            ALTER TABLE document.delay_requests RENAME COLUMN payment_schedule_id TO payment_id;
+            ALTER TABLE document.delay_requests ADD COLUMN IF NOT EXISTS buyer_in TEXT;
+            ALTER TABLE document.delay_requests ADD COLUMN IF NOT EXISTS seller_in TEXT;
+            UPDATE document.delay_requests r
+               SET buyer_in = c.buyer_in, seller_in = c.seller_in
+              FROM document.contracts c WHERE c.id = r.contract_id;
+            ALTER TABLE document.delay_requests DROP COLUMN IF EXISTS user_id;
+            ALTER TABLE document.delay_requests DROP COLUMN IF EXISTS type;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

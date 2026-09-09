@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+  <changeSet id="create-template-application-table" author="elmurod">
+    <sql>
+
+        -- 1. Jadvalni yaratish
+        CREATE TABLE IF NOT EXISTS document.report (
+            id          UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+            document_id UUID NOT NULL,
+            seller_id UUID,
+            buyer_id UUID,
+            name_uz TEXT,
+            name_ru TEXT,
+            name_en TEXT,
+            number INTEGER,
+            status TEXT ,
+            template_json TEXT,
+            deleted BOOLEAN NOT NULL DEFAULT FALSE,
+            created_by UUID,
+            created_date TIMESTAMP DEFAULT NOW(),
+            last_modified_date TIMESTAMP DEFAULT NOW()
+            );
+
+-- 3. Tezkor qidiruv uchun indekslar (ixtiyoriy, lekin tavsiya etiladi)
+        CREATE INDEX IF NOT EXISTS document_report_document_id ON document.report(document_id);
+        CREATE INDEX IF NOT EXISTS document_report_seller_id ON document.report(seller_id);
+        CREATE INDEX IF NOT EXISTS document_report_buyer_id ON document.report(buyer_id);
+
+    </sql>
+  </changeSet>
+</databaseChangeLog>

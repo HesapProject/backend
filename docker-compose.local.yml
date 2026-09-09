@@ -1,0 +1,177 @@
+# Local app stack (main, billing, gateway, …).
+#
+# Mode A — infra in Docker (recommended):
+#   docker compose -f docker-compose.infra.yml --env-file .env.local up -d
+#   ./scripts/local-docker-up.sh
+#   Uses POSTGRES_HOST=postgres, RABBIT_HOST=businessmq on network hesap-local.
+#
+# Mode B — DB/Rabbit via SSH tunnel on host:
+#   Set POSTGRES_HOST=host.docker.internal, POSTGRES_PORT=5435,
+#   RABBIT_HOST=host.docker.internal, RABBIT_PORT=35672 in .env.local
+#
+# Config: .env.local (copy from .env.local.example)
+
+x-service-base: &service-base
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+  env_file:
+    - .env.local
+
+x-postgres-env: &postgres-env
+  POSTGRES_SERVER: ${POSTGRES_HOST:-postgres}:${POSTGRES_PORT:-5432}
+  POSTGRES_USERNAME: ${POSTGRES_USERNAME:-postgres}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:}
+
+x-rabbit-env: &rabbit-env
+  RABBIT_HOST: ${RABBIT_HOST:-businessmq}
+  RABBIT_PORT: ${RABBIT_PORT:-5672}
+  RABBIT_USERNAME: ${RABBIT_USERNAME:-messaging}
+  RABBIT_PASSWORD: ${RABBIT_PASSWORD:}
+
+services:
+  business-gateway:
+    container_name: business-gateway-local
+    image: business-gateway:local
+    restart: on-failure
+    <<: *service-base
+    build:
+      context: .
+      dockerfile: ./api-gateway/Dockerfile
+      args:
+        version: ${VERSION}
+    environment:
+      MAIN_SERVICE: http://main:8001
+      LOG_SERVICE: http://log:8003
+      FILE_SERVICE: http://file:8004
+      DOCUMENT_SERVICE: http://document:8005
+      INTEGRATION_SERVICE: http://integration:8007
+    ports:
+      - "${PORT_GATEWAY:-8000}:8000"
+    networks:
+      - hesap-local
+    volumes:
+      - ./api-gateway/build/libs/api-gateway-${VERSION}.jar:/api-gateway.jar
+    depends_on:
+      - main
+      - log
+      - file
+      - document
+
+  main:
+    container_name: main-service-local
+    image: main:local
+    restart: on-failure
+    <<: *service-base
+    build:
+      context: .
+      dockerfile: ./service/main/Dockerfile
+      args:
+        version: ${VERSION}
+    environment:
+      <<: [*postgres-env, *rabbit-env]
+      INTEGRATION_SERVICE: http://integration:8007
+    ports:
+      - "${PORT_MAIN:-8001}:8001"
+    networks:
+      - hesap-local
+    volumes:
+      - ./service/main/build/libs/main-${VERSION}.jar:/main.jar
+
+  log:
+    container_name: log-service-local
+    image: log:local
+    restart: on-failure
+    <<: *service-base
+    build:
+      context: .
+      dockerfile: ./service/log/Dockerfile
+      args:
+        version: ${VERSION}
+    environment:
+      <<: [*postgres-env, *rabbit-env]
+      MAIN_SERVICE: http://main:8001
+    ports:
+      - "${PORT_LOG:-8003}:8003"
+    networks:
+      - hesap-local
+    volumes:
+      - ./service/log/build/libs/log-${VERSION}.jar:/log.jar
+    depends_on:
+      - main
+
+  file:
+    container_name: file-service-local
+    image: file:local
+    restart: on-failure
+    <<: *service-base
+    build:
+      context: .
+      dockerfile: ./service/file/Dockerfile
+      args:
+        version: ${VERSION}
+    environment:
+      <<: *postgres-env
+      MAIN_SERVICE: http://main:8001
+    ports:
+      - "${PORT_FILE:-8004}:8004"
+    networks:
+      - hesap-local
+    volumes:
+      - ./service/file/build/libs/file-${VERSION}.jar:/file.jar
+      - ${FILE_STORAGE_PATH:-./local-data/files}:/files
+    depends_on:
+      - main
+
+  document:
+    container_name: document-service-local
+    image: document:local
+    restart: on-failure
+    <<: *service-base
+    build:
+      context: .
+      dockerfile: ./service/document/Dockerfile
+      args:
+        version: ${VERSION}
+    environment:
+      <<: [*postgres-env, *rabbit-env]
+      MAIN_SERVICE: http://main:8001
+      INTEGRATION_SERVICE: http://integration:8007
+      IMZO_SERVICE: http://${IMZO_HOST:-host.docker.internal}:${IMZO_PORT:-8080}
+    ports:
+      - "${PORT_DOCUMENT:-8005}:8005"
+    networks:
+      - hesap-local
+    volumes:
+      - ./service/document/build/libs/document-${VERSION}.jar:/document.jar
+    depends_on:
+      - main
+
+  integration:
+    container_name: integration-service-local
+    image: integration:local
+    restart: on-failure
+    <<: *service-base
+    build:
+      context: .
+      dockerfile: ./service/integration/Dockerfile
+      args:
+        version: ${VERSION}
+    environment:
+      <<: [*postgres-env, *rabbit-env]
+      MAIN_SERVICE: http://main:8001
+      ESKIZ_BASE_URL: ${ESKIZ_BASE_URL:-https://notify.eskiz.uz/api}
+      GOOGLE_CREDENTIALS_PATH: /opt/keys/google-service-account.json
+    ports:
+      - "${PORT_INTEGRATION:-8007}:8007"
+    networks:
+      - hesap-local
+    volumes:
+      - ./service/integration/build/libs/integration-${VERSION}.jar:/integration.jar
+      - ./local-data/google-service-account.json:/opt/keys/google-service-account.json:ro
+    depends_on:
+      - business-gateway
+
+networks:
+  hesap-local:
+    name: hesap-local
+    external: true

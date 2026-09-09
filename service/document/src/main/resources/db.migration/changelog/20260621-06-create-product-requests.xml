@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Mahsulot so'rovlari: bir taraf so'rov yaratadi (requester_in), ikkinchisi
+         tasdiqlaydi yoki rad etadi. Taraflar PINFL/STIR'da; product_id qaysi mahsulot
+         haqida ekanini bildiradi (cancel_requests bilan bir xil struktura). -->
+    <changeSet id="20260621-06-create-product-requests" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            CREATE TABLE IF NOT EXISTS document.product_requests (
+                id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                contract_id        UUID NOT NULL,
+                product_id         UUID,
+                buyer_in           TEXT,
+                seller_in          TEXT,
+                requester_in       TEXT NOT NULL,
+                status             TEXT NOT NULL DEFAULT 'PENDING',
+                reason             TEXT,
+                deleted            BOOLEAN DEFAULT FALSE NOT NULL,
+                created_date       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE INDEX IF NOT EXISTS ix_product_requests_contract
+                ON document.product_requests (contract_id) WHERE deleted = false;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,4 @@
+databaseChangeLog:
+  - include:
+      file: changelog/20260207-00-create-cdn-data-table.xml
+      relativeToChangelogFile: true

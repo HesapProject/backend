@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Factura.uz OAuth2 (password grant) — rouming.uz Basic auth o'rniga.
+         Mavjud login/password ustunlari username/parol sifatida qayta ishlatiladi;
+         client_id/client_secret va token_url yangi qo'shiladi. Idempotent (IF NOT EXISTS). -->
+    <changeSet id="20260816-00-rouming-factura-oauth" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql splitStatements="true">
+            ALTER TABLE integration.rouming_setting ADD COLUMN IF NOT EXISTS client_id     TEXT;
+            ALTER TABLE integration.rouming_setting ADD COLUMN IF NOT EXISTS client_secret TEXT;
+            ALTER TABLE integration.rouming_setting ADD COLUMN IF NOT EXISTS token_url     TEXT;
+            -- base_url endi Factura.uz API bazasi; eski dev-s0.rouming.uz qiymatini yangilamaymiz
+            -- (admin panel orqali qayta kiritiladi). login/password NOT NULL cheklovi bo'lsa yumshatamiz.
+            ALTER TABLE integration.rouming_setting ALTER COLUMN base_url DROP NOT NULL;
+            ALTER TABLE integration.rouming_setting ALTER COLUMN login    DROP NOT NULL;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

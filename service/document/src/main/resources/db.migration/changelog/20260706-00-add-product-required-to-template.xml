@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Shablonda mahsulotlar MAJBURIYmi (productEnabled yoqilgan bo'lsa, shartnoma
+         yaratishda kamida 1 ta mahsulot shart). Mavjud shablonlar uchun DEFAULT FALSE
+         (orqaga moslik — hech narsa buzilmaydi). -->
+    <changeSet id="20260706-00-add-product-required-to-template" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE document.contract_template
+                ADD COLUMN IF NOT EXISTS product_required BOOLEAN DEFAULT FALSE;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

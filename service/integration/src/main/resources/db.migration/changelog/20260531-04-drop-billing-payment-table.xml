@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Payme/Click endi alohida jadvallarda; Uzum/Rahmat ham kerak emas —
+         shuning uchun umumiy billing.payment jadvali butunlay o'chiriladi.
+         Yuqoridagi copy changeset'lar avval ishlaydi (id tartibi bo'yicha). -->
+    <changeSet id="20260531-04-drop-billing-payment-table" author="claude">
+        <preConditions onFail="MARK_RAN">
+            <tableExists schemaName="billing" tableName="payment"/>
+        </preConditions>
+        <sql>
+            DROP TABLE billing.payment;
+        </sql>
+    </changeSet>
+</databaseChangeLog>

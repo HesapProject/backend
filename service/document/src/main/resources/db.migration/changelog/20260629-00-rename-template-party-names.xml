@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Shablon taraf nomlari ustunlarini qayta nomlash:
+         first_name_* → seller_name_* (sotuvchi), second_name_* → buyer_name_* (xaridor).
+         Idempotent: faqat eski ustun mavjud bo'lsa renomi qilinadi (prod crashloop'dan saqlanish). -->
+    <changeSet id="20260629-00-rename-template-party-names" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql splitStatements="false">
+            DO $$
+            BEGIN
+                IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='document' AND table_name='template' AND column_name='first_name_uz') THEN
+                    ALTER TABLE document.template RENAME COLUMN first_name_uz TO seller_name_uz;
+                END IF;
+                IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='document' AND table_name='template' AND column_name='first_name_ru') THEN
+                    ALTER TABLE document.template RENAME COLUMN first_name_ru TO seller_name_ru;
+                END IF;
+                IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='document' AND table_name='template' AND column_name='first_name_en') THEN
+                    ALTER TABLE document.template RENAME COLUMN first_name_en TO seller_name_en;
+                END IF;
+                IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='document' AND table_name='template' AND column_name='second_name_uz') THEN
+                    ALTER TABLE document.template RENAME COLUMN second_name_uz TO buyer_name_uz;
+                END IF;
+                IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='document' AND table_name='template' AND column_name='second_name_ru') THEN
+                    ALTER TABLE document.template RENAME COLUMN second_name_ru TO buyer_name_ru;
+                END IF;
+                IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='document' AND table_name='template' AND column_name='second_name_en') THEN
+                    ALTER TABLE document.template RENAME COLUMN second_name_en TO buyer_name_en;
+                END IF;
+            END $$;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

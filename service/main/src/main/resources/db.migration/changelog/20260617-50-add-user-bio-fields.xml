@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- OneID'dan keladigan tug'ilgan joy, millat, fuqarolik (manzil ustuni mavjud).
+         Profilda ko'rsatish uchun /me javobida qaytariladi. -->
+    <changeSet id="20260617-50-add-user-bio-fields" author="qodiriy">
+        <sql>
+            ALTER TABLE "user".user
+                ADD COLUMN IF NOT EXISTS birth_place  TEXT,
+                ADD COLUMN IF NOT EXISTS nationality  TEXT,
+                ADD COLUMN IF NOT EXISTS citizenship  TEXT;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

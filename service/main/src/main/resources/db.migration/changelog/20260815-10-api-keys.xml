@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- OpenAPI kalitlari — foydalanuvchi/kompaniya o'z nomidan API orqali shartnoma
+         tuzishi uchun. Kalitning o'zi saqlanmaydi: key_hash = SHA-256(kalit), key_prefix
+         faqat UI'da ko'rsatish uchun (hsp_xxxxxxxx…). expires_at NULL -> abadiy.
+         all_templates=true -> barcha shablonlar (full), aks holda template_ids ro'yxati. -->
+    <changeSet id="20260815-10-api-keys" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql splitStatements="false">
+            CREATE TABLE IF NOT EXISTS "user".api_key (
+                id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                owner_in           TEXT NOT NULL,          -- egasining PINFL/STIR (barqaror kalit)
+                owner_user_id      UUID,                   -- yaratilgan paytdagi user id (ma'lumot uchun)
+                name               TEXT NOT NULL,          -- kalit nomi ("1C integratsiyasi")
+                key_prefix         TEXT NOT NULL,          -- ko'rsatish uchun boshlanishi
+                key_hash           TEXT NOT NULL,          -- SHA-256 hex
+                scopes             TEXT[] NOT NULL DEFAULT '{}',   -- ApiScope
+                all_templates      BOOLEAN NOT NULL DEFAULT false, -- true -> full
+                template_ids       UUID[],                 -- all_templates=false bo'lganda
+                expires_at         TIMESTAMP,              -- NULL -> abadiy
+                webhook_url        TEXT,
+                webhook_secret     TEXT,
+                webhook_events     TEXT[],                 -- bo'sh/NULL -> barcha hodisalar
+                active             BOOLEAN NOT NULL DEFAULT true,
+                revoked_at         TIMESTAMP,
+                last_used_at       TIMESTAMP,
+                deleted            BOOLEAN NOT NULL DEFAULT false,
+                created_date       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS uq_api_key_hash ON "user".api_key (key_hash);
+            CREATE INDEX IF NOT EXISTS idx_api_key_owner_in ON "user".api_key (owner_in);
+        </sql>
+    </changeSet>
+</databaseChangeLog>

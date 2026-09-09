@@ -1,0 +1,148 @@
+server:
+  port: 8007
+  forward-headers-strategy: framework
+  servlet:
+    contextPath: /
+  error:
+    whitelabel:
+      enabled: false
+
+spring:
+  application:
+    name: integration-service
+
+  webflux:
+    base-path: /
+  data:
+    r2dbc:
+      repositories:
+        enabled: true
+
+  r2dbc:
+    url: r2dbc:postgresql://${POSTGRES_SERVER:localhost:5435}/hesap
+#    url: r2dbc:postgresql://${POSTGRES_SERVER:localhost:5435}/hesap
+    username: ${POSTGRES_USERNAME:postgres}
+    password: ${POSTGRES_PASSWORD:}
+    properties:
+      schema: integration
+
+  liquibase:
+    url: jdbc:postgresql://${POSTGRES_SERVER:localhost:5435}/hesap
+#    url: jdbc:postgresql://${POSTGRES_SERVER:localhost:5435}/hesap
+    user: ${POSTGRES_USERNAME:postgres}
+    password: ${POSTGRES_PASSWORD:}
+    change-log: classpath:db.migration/db.changelog-master.yaml
+    enabled: true
+    # DATABASECHANGELOG public schema'da turibdi (default). Boshqa servislarda
+    # `liquibase-schema: <schema>` ishlatiladi, lekin u target schema mavjud
+    # bo'lishini talab qiladi (chicken-and-egg). Integration servisi yangi
+    # bo'lgani uchun shu yondashuv tanlandi — init migratsiya schema'ni yaratadi.
+
+  rabbitmq:
+    host: ${RABBIT_HOST:localhost}
+    port: ${RABBIT_PORT:5672}
+    username: ${RABBIT_USERNAME:CHANGE_ME}
+    password: ${RABBIT_PASSWORD:}
+    exchange: exchange.direct.hesap
+
+springdoc:
+  api-docs:
+    path: /integration/v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+info:
+  app:
+    name: ${spring.application.name}
+    version: "@application.version@"
+    description: "@application.description@"
+
+#management:
+#  server:
+#    port: 8081
+#  health:
+#    ldap:
+#      enabled: off
+#  endpoints:
+#    web:
+#      exposure:
+#        include: "*"
+#    enabled-by-default: false
+#  endpoint:
+#    info:
+#      enabled: true
+#    env:
+#      enabled: true
+#    health:
+#      probes:
+#        enabled: true
+#      group:
+#        readiness:
+#          include: "readinessuser"
+#        liveness:
+#          include: "livenessuser"
+#      enabled: true
+#      show-details: always
+
+application:
+  main-service:
+    base-url: ${MAIN_SERVICE:http://95.182.117.234:8001}
+
+  my-id:
+    base-url: ${MY_ID_BASE_URL:https://api.myid.uz}
+    # Mobil ilova credential juftligi (avvalgi client-id/secret).
+    mobile-client-id: ${MY_ID_MOBILE_CLIENT_ID:CHANGE_ME}
+    mobile-client-secret: ${MY_ID_MOBILE_CLIENT_SECRET:}
+    # Web (business) credential juftligi — env orqali beriladi.
+    web-client-id: ${MY_ID_WEB_CLIENT_ID:}
+    web-client-secret: ${MY_ID_WEB_CLIENT_SECRET:}
+    # Mobil SDK config — iOS app SDK ni shu qiymatlar bilan ishga tushiradi
+    # (hardcode o'rniga backend'dan oladi; iOS hali ham xavfsiz fallback'ga ega).
+    mobile-client-hash: ${MY_ID_MOBILE_CLIENT_HASH:}
+    mobile-client-hash-id: ${MY_ID_MOBILE_CLIENT_HASH_ID:}
+
+  eskiz:
+    base-url: ${ESKIZ_BASE_URL:https://notify.eskiz.uz/api}
+  # amoCRM (eski crm-app o'rniga). client-secret DB tokenida saqlanadi (init-auth),
+  # bu yerda emas. Custom field id'lar amoCRM hisobiga bog'liq.
+  amocrm:
+    oauth-url: ${AMOCRM_OAUTH_URL:https://hesap.amocrm.ru/oauth2/access_token}
+    contacts-url: ${AMOCRM_CONTACTS_URL:https://hesap.amocrm.ru/api/v4/contacts}
+    client-id: ${AMOCRM_CLIENT_ID:18985252-db97-4409-9e93-19e96cef0cdd}
+    redirect-uri: ${AMOCRM_REDIRECT_URI:https://api.hesap.uz}
+    phone-field-id: ${AMOCRM_PHONE_FIELD_ID:580003}
+    hesap-user-id-field-id: ${AMOCRM_HESAP_USER_ID_FIELD_ID:1380977}
+
+# Plum scoring: login/password endi DB'da
+# (integration.integration_credential provider='PLUM') — IntegrationCredentialProvider
+# orqali o'qiladi. base-url fallback uchun, env var bilan override mumkin.
+plum:
+  base-url: ${PLUM_BASE_URL:https://pay.myuzcard.uz/api}
+  login: ${PLUM_LOGIN:}
+  password: ${PLUM_PASSWORD:}
+
+# Turanix partnyor-servis: project-id/secret-key endi DB'da
+# (integration.turanix_setting) — TuranixSettingService orqali o'qiladi. Bu yer
+# faqat fallback; env var bilan override mumkin. base-url ham DB'dan ustun.
+turanix:
+  base-url: ${TURANIX_BASE_URL:https://api.turanix.uz}
+  project-id: ${TURANIX_PROJECT_ID:}
+  secret-key: ${TURANIX_SECRET_KEY:}
+
+# Factura.uz (ЭСФ) — OAuth2 password grant. Creds DB'da (integration.rouming_setting)
+# RoumingSettingService orqali; bu yer faqat fallback. clientSecret/username/parolni
+# git'ga yozmaymiz — Control -> Integratsiyalar -> Rouming yoki env var orqali kiritiladi.
+rouming:
+  base-url: ${ROUMING_BASE_URL:https://api.faktura.uz}
+  token-url: ${ROUMING_TOKEN_URL:}
+  client-id: ${ROUMING_CLIENT_ID:hesapuz}
+  client-secret: ${ROUMING_CLIENT_SECRET:}
+  login: ${ROUMING_LOGIN:}
+  password: ${ROUMING_PASSWORD:}
+
+# Google Sheets — lead-forma (notification servisidan ko'chirildi).
+google:
+  credentials:
+    path: ${GOOGLE_CREDENTIALS_PATH:/opt/keys/google-service-account.json}
+  sheet:
+    id: ${GOOGLE_SHEET_ID:CHANGE_ME}

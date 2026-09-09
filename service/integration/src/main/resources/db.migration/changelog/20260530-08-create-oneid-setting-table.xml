@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <changeSet id="20260530-08-create-oneid-setting-table" author="qodiriy">
+        <sql>
+            CREATE TABLE IF NOT EXISTS integration.oneid_setting (
+                id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                base_url           TEXT NOT NULL,
+                client_id          TEXT NOT NULL,
+                client_secret      TEXT,
+                created_date       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260530-08-seed-oneid-setting" author="qodiriy">
+        <!-- validCheckSum=ANY: bu changeset prod'da allaqachon qo'llangan. SQL ichidagi
+             izoh matni o'zgarsa (masalan user-service→main-service rename), Liquibase
+             checksum mos kelmay startupda ValidationFailedException bilan yiqilardi
+             (integration-service crash-loop → :8007 connection refused). Seed idempotent
+             (WHERE NOT EXISTS) — har qanday checksum'ni qabul qilish xavfsiz. -->
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            -- Production'dagi mavjud OneID creds (main-service'ning application.yml'idan).
+            -- Admin keyinroq UI orqali o'zgartirishi mumkin.
+            INSERT INTO integration.oneid_setting (base_url, client_id, client_secret)
+            SELECT 'https://sso.egov.uz', 'hesap_uz', 'CHANGE_ME'
+            WHERE NOT EXISTS (SELECT 1 FROM integration.oneid_setting);
+        </sql>
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Per-template, per-event notification config — endi integration servis egasi.
+         Document servisdagi mavjud config (document.template_notification) cross-schema ko'chiriladi. -->
+    <changeSet id="20260620-10-create-template-notification" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            CREATE TABLE IF NOT EXISTS integration.template_notification (
+                id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                template_id        UUID NOT NULL,
+                event              TEXT NOT NULL,
+                sms_enabled        BOOLEAN DEFAULT FALSE,
+                sms_text           TEXT,
+                firebase_enabled   BOOLEAN DEFAULT TRUE,
+                firebase_text      TEXT,
+                deleted            BOOLEAN DEFAULT FALSE NOT NULL,
+                created_date       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE UNIQUE INDEX IF NOT EXISTS ux_integration_template_notification_tpl_event
+                ON integration.template_notification (template_id, event)
+                WHERE deleted = FALSE;
+        </sql>
+    </changeSet>
+
+    <!-- Document schema'dagi mavjud config'ni integration'ga ko'chirish (faqat document jadvali bor bo'lsa). -->
+    <changeSet id="20260620-10-copy-from-document" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <preConditions onFail="MARK_RAN">
+            <tableExists schemaName="document" tableName="template_notification"/>
+        </preConditions>
+        <sql>
+            INSERT INTO integration.template_notification
+                (template_id, event, sms_enabled, sms_text, firebase_enabled, firebase_text, deleted, created_date, last_modified_date)
+            SELECT d.template_id, d.event, d.sms_enabled, d.sms_text, d.firebase_enabled, d.firebase_text,
+                   d.deleted, d.created_date, d.last_modified_date
+              FROM document.template_notification d
+             WHERE d.deleted = FALSE
+               AND NOT EXISTS (
+                   SELECT 1 FROM integration.template_notification i
+                    WHERE i.template_id = d.template_id AND i.event = d.event AND i.deleted = FALSE
+               );
+        </sql>
+    </changeSet>
+</databaseChangeLog>

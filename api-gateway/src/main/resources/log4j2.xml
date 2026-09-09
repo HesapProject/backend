@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="info">
+    <Properties>
+        <Property name="baseDir">/opt/hesap/log/api-gateway</Property>
+        <Property name="filename">api-gateway.log</Property>
+    </Properties>
+
+    <Filter type="ThresholdFilter" level="info"/>
+
+    <Appenders>
+        <Console name="console" target="system_out">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS}
+            [%t]
+            %highlight{%-10level}{FATAL=bg_red, error=red, warn=yellow, info=green, debug=blue}
+            %logger{36} - %msg%n"
+            />
+        </Console>
+
+        <!--
+            Below is a configuration that uses a RollingFileAppender with size based triggering
+            policies, will create up to 20 archives on the same day (1-20) that are stored in a
+            directory based on the current year and month, and will compress each archive using
+            gzip and will roll every day at midnight. During every rollover, this configuration
+            will delete files that match "*/api-gateway*.log.gz" and are 30 days old or older,
+            but keep the most recent 100 GB or the most recent 25 files, whichever comes first.
+        -->
+        <RollingFile name="rollingFile" fileName="${baseDir}/${filename}"
+                     filePattern="${baseDir}/$${date:yyyy-MM}/api-gateway-%d{yyyyMMdd}.log.gz">
+            <PatternLayout pattern="[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n"/>
+            <Policies>
+                <!-- Performs rolling everyday at midnight -->
+                <CronTriggeringPolicy schedule="0 0 0 * * ?"/>
+                <!-- Max log file size is 250 MB -->
+                <SizeBasedTriggeringPolicy size="250MB"/>
+                <!-- No need for this since there is a Cron trigger which does similar thing -->
+                <!--<TimeBasedTriggeringPolicy interval="24" modulate="true" />-->
+            </Policies>
+            <DefaultRolloverStrategy max="20">
+                <!--
+                    Nested conditions: the inner status is only evaluated on files
+                    for which the outer conditions are true.
+                -->
+                <Delete basePath="${baseDir}" maxDepth="2">
+                    <IfFileName glob="*/api-gateway-*.log.gz"/>
+                    <IfLastModified age="30D">
+                        <IfAny>
+                            <IfAccumulatedFileSize exceeds="100GB"/>
+                            <IfAccumulatedFileCount exceeds="25"/>
+                        </IfAny>
+                    </IfLastModified>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <Logger name="org.springframework" level="warn"/>
+        <Logger name="springfox.documentation" level="warn"/>
+
+        <Logger name="uz.hesap" level="debug" additivity="false">
+            <AppenderRef ref="console" level="debug"/>
+            <AppenderRef ref="rollingFile" level="info"/>
+        </Logger>
+
+        <!--
+            Appenders in root log below will consider all the logs from all dependencies
+            which have a corresponding log level. For more fine-grained logs rollingFile
+            can be introduced here.
+        -->
+        <Root level="warn">
+            <AppenderRef ref="console"/>
+        </Root>
+    </Loggers>
+</Configuration>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+    <changeSet id="alter-eskiz-log-table-add-request-response" author="claude">
+        <sql>
+            ALTER TABLE "log".eskiz_log ADD COLUMN IF NOT EXISTS request TEXT;
+            ALTER TABLE "log".eskiz_log ADD COLUMN IF NOT EXISTS response TEXT;
+        </sql>
+    </changeSet>
+</databaseChangeLog>

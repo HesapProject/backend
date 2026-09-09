@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Shartnoma timeline hodisasiga sessiya va qurilma ma'lumoti (audit uchun).
+         Eski yozuvlarda NULL bo'ladi. -->
+    <changeSet id="20260901-00-contract-timeline-session-device" author="qodiriy">
+        <sql>
+            ALTER TABLE log.contract_log ADD COLUMN IF NOT EXISTS session_id UUID;
+            ALTER TABLE log.contract_log ADD COLUMN IF NOT EXISTS device TEXT;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

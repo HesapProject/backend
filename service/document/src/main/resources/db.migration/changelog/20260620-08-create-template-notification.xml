@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Per-template, per-event notification config (SMS/Firebase yoq-o'chiq + matn).
+         Mavjud DOCUMENT_CREATED config'i template flat ustunlaridan ko'chiriladi. -->
+    <changeSet id="20260620-08-create-template-notification" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            CREATE TABLE IF NOT EXISTS document.template_notification (
+                id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                template_id        UUID NOT NULL,
+                event              TEXT NOT NULL,
+                sms_enabled        BOOLEAN DEFAULT FALSE,
+                sms_text           TEXT,
+                firebase_enabled   BOOLEAN DEFAULT TRUE,
+                firebase_text      TEXT,
+                deleted            BOOLEAN DEFAULT FALSE NOT NULL,
+                created_date       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE UNIQUE INDEX IF NOT EXISTS ux_template_notification_tpl_event
+                ON document.template_notification (template_id, event)
+                WHERE deleted = FALSE;
+
+            -- Eski flat config (shartnoma yuborish) → DOCUMENT_CREATED qatori.
+            INSERT INTO document.template_notification
+                (template_id, event, sms_enabled, sms_text, firebase_enabled, firebase_text)
+            SELECT t.id, 'DOCUMENT_CREATED',
+                   COALESCE(t.sms_notification_enabled, FALSE), t.sms_notification_text,
+                   COALESCE(t.firebase_notification_enabled, TRUE), t.firebase_notification_text
+              FROM document.template t
+             WHERE t.deleted = FALSE;
+        </sql>
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+  <changeSet id="create-template-application-table" author="elmurod">
+    <sql>
+
+        alter table "document".payment_schedule_request
+            add column if not exists type TEXT;
+
+        alter table "document".payment_schedule_request
+            add column if not exists payment_schedule_id UUID;
+
+        alter table "document".payment_schedule
+            add column if not exists payment_completed_at TIMESTAMP;
+
+        alter table "document".payment_schedule
+            add column if not exists previous_payment_date TIMESTAMP;
+
+    </sql>
+  </changeSet>
+</databaseChangeLog>

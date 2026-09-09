@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- contract_template.template_data (JRXML) 3 tilga bo'linadi:
+         eski template_data → template_data_uz (rename), template_data_ru va template_data_en
+         ustunlari qo'shiladi. Notice/ClaimTemplate hozircha 1 tilda qoladi. -->
+    <changeSet id="20260704-10-template-data-3-langs" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql splitStatements="false">
+            DO $$
+            BEGIN
+                -- Eski template_data → template_data_uz (backward-compat: mavjud qatorlar uz sifatida saqlanadi)
+                IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='document' AND table_name='contract_template' AND column_name='template_data') THEN
+                    ALTER TABLE document.contract_template RENAME COLUMN template_data TO template_data_uz;
+                END IF;
+                -- Ru va En yangi ustunlar (idempotent)
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='document' AND table_name='contract_template' AND column_name='template_data_ru') THEN
+                    ALTER TABLE document.contract_template ADD COLUMN template_data_ru TEXT;
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='document' AND table_name='contract_template' AND column_name='template_data_en') THEN
+                    ALTER TABLE document.contract_template ADD COLUMN template_data_en TEXT;
+                END IF;
+            END $$;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

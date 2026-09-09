@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Shartnoma yuborilganda boshqa tarafga SMS-xabarnoma yuborilsinmi.
+         Default FALSE — opt-in: admin har shablonda alohida yoqadi
+         (kutilmagan Eskiz xarajati bo'lmasligi uchun). -->
+    <changeSet id="20260615-01-add-sms-notification-enabled-to-template" author="qodiriy">
+        <sql>
+            ALTER TABLE document.template
+                ADD COLUMN sms_notification_enabled BOOLEAN DEFAULT FALSE;
+        </sql>
+    </changeSet>
+
+    <!-- SMS matni (shablon darajasida sozlanadigan). NULL/bo'sh → kodda default matn.
+         {raqam} placeholder shartnoma raqamiga almashtiriladi.
+         DIQQAT: matn Eskiz'da tasdiqlangan bo'lishi shart. -->
+    <changeSet id="20260615-02-add-sms-notification-text-to-template" author="qodiriy">
+        <sql>
+            ALTER TABLE document.template
+                ADD COLUMN sms_notification_text TEXT;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

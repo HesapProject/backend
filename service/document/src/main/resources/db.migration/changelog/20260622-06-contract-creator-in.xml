@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- contracts: created_by_user_id (UUID) → creator_in (PINFL/STIR). Yaratuvchi ham
+         taraflardek (buyer_in/seller_in) PINFL bilan. UUID kerakda user-service'dan tiklanadi. -->
+    <changeSet id="20260622-06-contract-creator-in" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE document.contracts ADD COLUMN IF NOT EXISTS creator_in TEXT;
+
+            -- Mavjud created_by_user_id (UUID) larni PINFL/STIR'ga backfill (cross-schema).
+            UPDATE document.contracts c
+               SET creator_in = (SELECT COALESCE(u.pinfl, u.tin) FROM "user"."user" u WHERE u.id = c.created_by_user_id)
+             WHERE c.creator_in IS NULL AND c.created_by_user_id IS NOT NULL;
+
+            ALTER TABLE document.contracts DROP COLUMN IF EXISTS created_by_user_id;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

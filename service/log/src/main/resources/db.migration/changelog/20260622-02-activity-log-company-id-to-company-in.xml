@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- activity_log: company_id (uuid) -> company_in (text, STIR). Jadval yangi (0 qator). -->
+    <changeSet id="20260622-02-activity-log-company-id-to-company-in" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE IF EXISTS "log".activity_log ADD COLUMN IF NOT EXISTS company_in TEXT;
+            ALTER TABLE IF EXISTS "log".activity_log DROP COLUMN IF EXISTS company_id;
+            CREATE INDEX IF NOT EXISTS idx_activity_log_company_in ON "log".activity_log (company_in);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

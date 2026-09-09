@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- 2 ta scoringли paket (namuna/test). Idempotent — ON CONFLICT DO NOTHING. -->
+    <changeSet id="20260703-20-seed-scoring-packages" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql splitStatements="false">
+            INSERT INTO "user".packages
+                (id, name_uz, name_ru, name_en,
+                 description_uz, description_ru, description_en,
+                 price, duration, stars, templates, type,
+                 scoring_hesap, scoring_katm, scoring_payment, deleted)
+            VALUES
+                ('a2000001-0001-4001-8001-000000000001',
+                 'Scoring Boshlang''ich', 'Скоринг Старт', 'Scoring Start',
+                 '5 Hesap + 3 KATM + 2 To''lov skoringi', '5 Hesap + 3 КАТМ + 2 платёжных скоринга',
+                 '5 Hesap + 3 KATM + 2 payment scorings',
+                 50000, 30, 3, '{"type":"SHARED","totalCount":0,"templates":[]}', 'C2C',
+                 5, 3, 2, FALSE),
+                ('a2000001-0001-4001-8001-000000000002',
+                 'Scoring Pro', 'Скоринг Про', 'Scoring Pro',
+                 '20 Hesap + 10 KATM + 10 To''lov skoringi', '20 Hesap + 10 КАТМ + 10 платёжных скорингов',
+                 '20 Hesap + 10 KATM + 10 payment scorings',
+                 150000, 90, 5, '{"type":"SHARED","totalCount":0,"templates":[]}', 'C2C',
+                 20, 10, 10, FALSE)
+            ON CONFLICT (id) DO NOTHING;
+        </sql>
+    </changeSet>
+</databaseChangeLog>

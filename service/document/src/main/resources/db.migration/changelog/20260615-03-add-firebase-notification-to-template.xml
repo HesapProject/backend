@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Shartnoma yuborilganda boshqa tarafga Firebase push yuborilsinmi.
+         Push hozir doim ketadi → DEFAULT TRUE (orqaga moslik, mavjud xulq saqlanadi). -->
+    <changeSet id="20260615-03-add-firebase-notification-enabled-to-template" author="qodiriy">
+        <sql>
+            ALTER TABLE document.template
+                ADD COLUMN firebase_notification_enabled BOOLEAN DEFAULT TRUE;
+        </sql>
+    </changeSet>
+
+    <!-- Push matni (body). NULL/bo'sh → kodda default matn.
+         {raqam} → shartnoma raqami, {yuboruvchi} → yuboruvchi ismi. -->
+    <changeSet id="20260615-04-add-firebase-notification-text-to-template" author="qodiriy">
+        <sql>
+            ALTER TABLE document.template
+                ADD COLUMN firebase_notification_text TEXT;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Scoring usage — har scoring ishlatilganda paketdan hisoblanadi (per-tur). -->
+    <changeSet id="20260704-10-scoring-usage" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql splitStatements="false">
+            CREATE TABLE IF NOT EXISTS "user".scoring_usage (
+                id            UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                user_in       TEXT,
+                package_id    UUID,
+                scoring_type  TEXT,          -- HESAP | KATM | PAYMENT
+                scoring_ref   TEXT,          -- integration scoring id (izlash uchun)
+                created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE INDEX IF NOT EXISTS idx_scoring_usage_pkg
+                ON "user".scoring_usage (package_id, scoring_type);
+        </sql>
+    </changeSet>
+</databaseChangeLog>

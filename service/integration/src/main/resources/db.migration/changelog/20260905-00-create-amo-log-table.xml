@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd">
+
+    <!-- amoCRM so'rovlari monitoring logi (kontakt yaratish / token yangilash). -->
+    <changeSet id="20260905-00-create-amo-log-table" author="qodiriy">
+        <sql>
+            CREATE TABLE IF NOT EXISTS integration.amo_log (
+                id             UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                action         TEXT,
+                status         TEXT,
+                user_id        TEXT,
+                phone          TEXT,
+                amo_contact_id BIGINT,
+                request        TEXT,
+                response       TEXT,
+                error_message  TEXT,
+                created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE INDEX IF NOT EXISTS idx_amo_log_created_at
+                ON integration.amo_log (created_at DESC);
+        </sql>
+    </changeSet>
+</databaseChangeLog>

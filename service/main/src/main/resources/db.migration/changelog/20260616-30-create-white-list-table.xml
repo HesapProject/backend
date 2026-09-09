@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Whitelist: from_user → to_user foydalanuvchiga for_type imkoniyati uchun ruxsat beradi.
+         for_type: DOCUMENTS, SCORING, PARTNERS, CONTRACTS. -->
+    <changeSet id="20260616-30-create-white-list-table" author="system">
+        <sql>
+            CREATE TABLE IF NOT EXISTS "user".white_list
+            (
+                id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                from_user          UUID NOT NULL,
+                to_user            UUID NOT NULL,
+                for_type           TEXT NOT NULL,
+                created_date       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE INDEX IF NOT EXISTS idx_white_list_from ON "user".white_list (from_user);
+            CREATE INDEX IF NOT EXISTS idx_white_list_to ON "user".white_list (to_user);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

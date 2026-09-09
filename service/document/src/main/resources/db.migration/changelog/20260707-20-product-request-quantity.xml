@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Mahsulot so'roviga berilgan SONI (miqdor). Product quantity'sidan kam bo'lsa
+         qisman berilgan hisoblanadi. NULL -> to'liq. amount o'rniga (summa emas, son). -->
+    <changeSet id="20260707-20-product-request-quantity" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE "document".product_requests
+                ADD COLUMN IF NOT EXISTS quantity DOUBLE PRECISION;
+        </sql>
+    </changeSet>
+</databaseChangeLog>

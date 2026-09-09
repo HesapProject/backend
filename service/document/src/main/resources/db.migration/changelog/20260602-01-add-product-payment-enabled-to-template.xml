@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Shablonda mahsulotlar va to'lov jadvali yoqilganligi flaglari.
+         Mavjud shablonlar uchun DEFAULT TRUE (orqaga moslik). -->
+    <changeSet id="20260602-01-add-product-payment-enabled-to-template" author="qodiriy">
+        <sql>
+            ALTER TABLE document.template
+                ADD COLUMN product_enabled          BOOLEAN DEFAULT TRUE,
+                ADD COLUMN payment_schedule_enabled BOOLEAN DEFAULT TRUE;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

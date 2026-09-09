@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- contract_product -> products, contract_witness -> witnesses (faqat jadval nomi).
+         ALTER TABLE IF EXISTS idempotent (PG14+). DO $$ ishlatilmaydi. -->
+    <changeSet id="20260621-00-rename-product-witness-tables" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE IF EXISTS document.contract_product RENAME TO products;
+            ALTER TABLE IF EXISTS document.contract_witness RENAME TO witnesses;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

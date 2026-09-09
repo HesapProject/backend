@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!--
+        Boshqa servicelar singari: shu changeset birinchi ishlaydi, schema
+        va uuid-ossp extension'ni yaratadi. Keyingi changesetlar `integration`
+        schema'da CREATE TABLE qiladi va uuid_generate_v4() chaqiradi.
+    -->
+    <changeSet id="init-integration-schema" author="qodiriy">
+        <sql>
+            CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+            CREATE SCHEMA IF NOT EXISTS integration;
+        </sql>
+    </changeSet>
+</databaseChangeLog>

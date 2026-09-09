@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- user.user jadvalidan ortiqcha ustunlarni o'chirish + yangi ustunlar qo'shish -->
+    <changeSet id="20260528-19-drop-and-add-user-columns" author="system">
+        <sql>
+            ALTER TABLE "user".user
+                DROP COLUMN IF EXISTS password,
+                DROP COLUMN IF EXISTS auth_provider,
+                DROP COLUMN IF EXISTS login_device,
+                ADD COLUMN IF NOT EXISTS legal_name TEXT,
+                ADD COLUMN IF NOT EXISTS tin TEXT,
+                ADD COLUMN IF NOT EXISTS is_verified BOOLEAN NOT NULL DEFAULT FALSE;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

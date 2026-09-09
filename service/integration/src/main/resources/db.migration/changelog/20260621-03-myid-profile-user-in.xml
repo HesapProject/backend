@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- myid_profile: user_id (UUID) → user_in (PINFL/STIR). user_in eski user_id'dan
+         "user"."user"'dan resolish; topilmasa pasport pinfl'iga tushadi; so'ng drop. -->
+    <changeSet id="20260621-03-myid-profile-user-in" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE integration.myid_profile ADD COLUMN IF NOT EXISTS user_in TEXT;
+
+            UPDATE integration.myid_profile p
+               SET user_in = (SELECT COALESCE(u.pinfl, u.tin) FROM "user"."user" u WHERE u.id = p.user_id)
+             WHERE p.user_id IS NOT NULL;
+
+            UPDATE integration.myid_profile p
+               SET user_in = p.pinfl
+             WHERE p.user_in IS NULL AND p.pinfl IS NOT NULL;
+
+            ALTER TABLE integration.myid_profile DROP COLUMN IF EXISTS user_id;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+    <changeSet id="create-integration-sms-providers" author="claude">
+        <sql>
+            CREATE TABLE IF NOT EXISTS "integration".sms_providers
+            (
+                id                 UUID PRIMARY KEY   DEFAULT gen_random_uuid() NOT NULL,
+                eskiz_email        TEXT      NOT NULL,
+                eskiz_secret       TEXT      NOT NULL,
+                created_date       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+        </sql>
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+    <changeSet id="create-payme-log-table" author="claude">
+        <sql>
+            CREATE TABLE IF NOT EXISTS "log".payme_log
+            (
+                id UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                user_id UUID,
+                company_id UUID,
+                type TEXT,
+                status TEXT,
+                error_message TEXT,
+                request TEXT,
+                response TEXT,
+                request_time TIMESTAMP,
+                created_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+        </sql>
+    </changeSet>
+</databaseChangeLog>

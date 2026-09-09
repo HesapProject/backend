@@ -1,0 +1,460 @@
+stages:
+  - deploy
+
+variables:
+  VERSION: "1.0.0-SNAPSHOT"
+  # Docker (root) bind-mounts build/*.jar; gitlab-runner cannot delete them on checkout.
+  GIT_CLEAN_FLAGS: "-ffdx --exclude=service/*/build/ --exclude=api-gateway/build/ --exclude=build/ --exclude=.gradle/"
+
+.deploy_template:
+  stage: deploy
+  before_script:
+    - export GRADLE_USER_HOME="$(pwd)/.gradle"
+    - export VERSION="${VERSION:-1.0.0-SNAPSHOT}"
+    - chmod +x ./gradlew
+  script:
+    # 1. AVVAL build. Fail bo'lsa ishlab turgan konteynerlarga TEGMAYMIZ (outage yo'q).
+    - |
+      if [ -f gradle/wrapper/gradle-wrapper.jar ]; then
+        ./gradlew build -x test --no-daemon
+      else
+        echo "gradle-wrapper.jar missing, using system gradle"
+        gradle build -x test --no-daemon
+      fi
+    # 2. Faqat app konteynerlarni majburan o'chiramiz (postgres/rabbitmq tegilmaydi —
+    #    DB restart bo'lmaydi). Nom konflikti ham shu bilan tozalanadi.
+    - |
+      for container in \
+        business-gateway \
+        main-service \
+        log-service \
+        file-service \
+        document-service \
+        notification-service \
+        integration-service
+      do
+        docker rm -f "$container" 2>/dev/null || true
+      done
+    # 3. O'chirilgan app konteynerlarni yangi jar'lar bilan qayta yaratamiz.
+    #    --force-recreate YO'Q → postgres/rabbitmq qayta yaratilmaydi.
+    - docker compose up -d --remove-orphans
+  # after_script'da DESTRUCTIVE `down` YO'Q — deploy fail bo'lsa mavjud konteynerlar
+  # ishlab tursin (yarim-deploy butun prod'ni o'chirmasin).
+
+# =========================
+# DEV — o'chirildi (2026-08-15)
+# =========================
+# Dev muhiti yopildi: dev branch prod'dan oylab orqada qolar, dev DB alohida
+# liniya edi va u yerdagi sinov prod holatini aks ettirmasdi. Endi ish
+# feature branch → MR → prod tartibida boradi.
+
+# =========================
+# MASTER / STAGE
+# =========================
+
+deploy_stage:
+  extends: .deploy_template
+  resource_group: stage
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "master"'
+      when: on_success
+  tags:
+    - stage
+
+# =========================
+# PROD
+# =========================
+
+deploy_prod:
+  extends: .deploy_template
+  # Bir vaqtda faqat bitta prod deploy (concurrent deploy outage'ni oldini oladi).
+  resource_group: prod
+  rules:
+    # [diagnose], [introspect-templates], [migrate-templates] commit'lari deploy QILMAYDI.
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[diagnose\]/'
+      when: never
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[introspect-templates\]/'
+      when: never
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[migrate-templates\]/'
+      when: never
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[x100-contracts\]/'
+      when: never
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[diag-sql\]/'
+      when: never
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[mig-status\]/'
+      when: never
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[mig-remaining\]/'
+      when: never
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[mig-delta\]/'
+      when: never
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[cancel-orders\]/'
+      when: never
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[dedup-pay\]/'
+      when: never
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[fix-x100\]/'
+      when: never
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[fix-prep-pay\]/'
+      when: never
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[backup-db\]/'
+      when: never
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[mig-products\]/'
+      when: never
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[mig-notice-claim\]/'
+      when: never
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[check-logs\]/'
+      when: never
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[backfill-orders\]/'
+      when: never
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[fix-paid-x100\]/'
+      when: never
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[fix-paid-imp\]/'
+      when: never
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[fix-payreq\]/'
+      when: never
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[mig-legacy-purchases\]/'
+      when: never
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[mig-payme-txn\]/'
+      when: never
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[fix-2927\]/'
+      when: never
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[diag-contract\]/'
+      when: never
+    - if: '$CI_COMMIT_REF_NAME == "prod"'
+      when: on_success
+  tags:
+    - prod
+
+# =========================
+# TEMP: eski trust DB'da template/shablon jadvallarini aniqlash — [introspect-templates] gate.
+# Legacy'dan yangi contract_template'ga migratsiya yozish uchun struktura kerak.
+# =========================
+introspect_templates_prod:
+  stage: deploy
+  resource_group: prod
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[introspect-templates\]/'
+      when: on_success
+  tags:
+    - prod
+  script:
+    - bash scripts/migration/ci/introspect-templates.sh
+
+# =========================
+# TEMP: legacy contract_type → document.contract_template migratsiya — [migrate-templates] gate.
+# 4 ta legacy shablon (name/lender/debtor/example uz+ru+en) yangi jadvalga ko'chiriladi.
+# Idempotent — bir necha marta run qilinsa xato bermaydi (deterministik UUID, ON CONFLICT).
+# =========================
+migrate_templates_prod:
+  stage: deploy
+  resource_group: prod
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[migrate-templates\]/'
+      when: on_success
+  tags:
+    - prod
+  script:
+    - bash scripts/migration/ci/migrate-templates.sh
+
+# =========================
+# TEMP: eski (old hesap) shartnoma summalarini tiyinga x100 — [x100-contracts] gate.
+# [apply] marker bo'lsa yozadi, aks holda PREVIEW. Idempotent (marker jadval).
+# =========================
+# =========================
+# Bazalarni zaxiralash (read-only) — [backup-db] gate.
+# Dumplar serverda /var/backups/hesap/ da, 900 MB dan kichiklari artifact sifatida ham.
+# =========================
+backup_db_prod:
+  stage: deploy
+  resource_group: prod
+  timeout: 3h
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[backup-db\]/'
+      when: on_success
+  tags:
+    - prod
+  script:
+    - bash scripts/backup/backup-dbs.sh
+  artifacts:
+    name: hesap-db-backup
+    expire_in: 1 day
+    when: always
+    paths:
+      - backup/
+
+diag_sql_prod:
+  stage: deploy
+  resource_group: prod
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[diag-sql\]/'
+      when: on_success
+  tags:
+    - prod
+  script:
+    - bash scripts/migration/ci/diag-sql.sh
+
+# =========================
+# TEMP: bitta legacy shartnoma (default № 2927) buzuq to'lov jadvalini tuzatish — [fix-2927] gate.
+# Buzuqlik: migratsiya artefaktlari — dublikat qatorlar (2×), ×100 ortiqcha summa, xato valyuta (USD).
+# PREVIEW default; [apply] marker bo'lsa yozadi. Idempotent, log bilan (qaytariladi), bog'lamli qatorga tegmaydi.
+# Boshqa shartnoma uchun: FIX_NUM env (CI/CD variable).
+# =========================
+fix_contract_2927_prod:
+  stage: deploy
+  resource_group: prod
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[fix-2927\]/'
+      when: on_success
+  tags:
+    - prod
+  script:
+    - bash scripts/migration/ci/fix-contract-2927.sh
+
+# Bitta shartnoma tashxisi (READ-ONLY) — [diag-contract] gate, num=<raqam> title'dan.
+diag_contract_prod:
+  stage: deploy
+  resource_group: prod
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[diag-contract\]/'
+      when: on_success
+  tags:
+    - prod
+  script:
+    - bash scripts/migration/ci/diag-contract.sh
+
+check_logs_prod:
+  stage: deploy
+  resource_group: prod
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[check-logs\]/'
+      when: on_success
+  tags:
+    - prod
+  script:
+    - bash scripts/migration/ci/check-logs.sh
+
+# Payme/Click PAID bo'lib grant/purchase yozilmagan orderlarni tiklash — [backfill-orders].
+# [apply] sarlavhada bo'lsa yozadi, aks holda PREVIEW.
+backfill_orders_prod:
+  stage: deploy
+  resource_group: prod
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[backfill-orders\]/'
+      when: on_success
+  tags:
+    - prod
+  script:
+    - bash scripts/migration/ci/backfill-orders.sh
+
+# Eski paket xaridlari (trust.user_package) -> "user".purchases — [mig-legacy-purchases].
+# [apply] sarlavhada bo'lsa yozadi, aks holda PREVIEW.
+mig_legacy_purchases_prod:
+  stage: deploy
+  resource_group: prod
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[mig-legacy-purchases\]/'
+      when: on_success
+  tags:
+    - prod
+  script:
+    - bash scripts/migration/ci/mig-legacy-purchases.sh
+
+# Payme daromadi: payment.transaction (PAID) -> purchases, user_package legacy o'chirilib.
+# [apply] sarlavhada bo'lsa yozadi, aks holda PREVIEW. — [mig-payme-txn].
+mig_payme_txn_prod:
+  stage: deploy
+  resource_group: prod
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[mig-payme-txn\]/'
+      when: on_success
+  tags:
+    - prod
+  script:
+    - bash scripts/migration/ci/mig-payme-txn.sh
+
+x100_old_contracts_prod:
+  stage: deploy
+  resource_group: prod
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[x100-contracts\]/'
+      when: on_success
+  tags:
+    - prod
+  script:
+    - bash scripts/migration/ci/mig-x100.sh
+
+# =========================
+# TEMP: migratsiya holati (read-only) — [mig-status] gate.
+# Eski trust jadval countlari + yangi migration.*/target countlar.
+# =========================
+mig_status_prod:
+  stage: deploy
+  resource_group: prod
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[mig-status\]/'
+      when: on_success
+  tags:
+    - prod
+  script:
+    - bash scripts/migration/ci/mig-status.sh
+
+# =========================
+# TEMP: qolgan legacy ma'lumotlar (passport/notification/notice/claim/payreq/upu)
+# migratsiyasi — [mig-remaining] gate; [apply] bilan yozadi, aks holda PREVIEW.
+# =========================
+mig_remaining_prod:
+  stage: deploy
+  resource_group: prod
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[mig-remaining\]/'
+      when: on_success
+  tags:
+    - prod
+  script:
+    - bash scripts/migration/ci/mig-remaining.sh
+
+# =========================
+# TEMP: eski DB delta sinxron (yangi qo'shilganlar) — [mig-delta] gate.
+# [apply] bilan yozadi, aks holda PREVIEW. Idempotent.
+# =========================
+mig_delta_prod:
+  stage: deploy
+  resource_group: prod
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[mig-delta\]/'
+      when: on_success
+  tags:
+    - prod
+  script:
+    - bash scripts/migration/ci/mig-delta.sh
+
+# =========================
+# TEMP: Payme ac.companyId davridagi o'lik PENDING buyurtmalarni bekor qilish
+# — [cancel-orders] gate; [apply] bilan yozadi, aks holda PREVIEW.
+# =========================
+cancel_orders_prod:
+  stage: deploy
+  resource_group: prod
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[cancel-orders\]/'
+      when: on_success
+  tags:
+    - prod
+  script:
+    - bash scripts/migration/ci/cancel-pending-orders.sh
+
+# =========================
+# Eski prepare-id to'lov kollisiyasini tuzatish (PREVIEW/[apply])
+# =========================
+fix_prep_pay:
+  stage: deploy
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[fix-prep-pay\]/'
+      when: on_success
+  tags:
+    - prod
+  script:
+    - bash scripts/migration/ci/fix-prep-pay.sh
+
+# =========================
+# TEMP: to'lov jadvali dublikatlarini soft-delete — [dedup-pay] gate.
+# [apply] bilan yozadi, aks holda PREVIEW. Qaytarish: payment_dedup_log orqali.
+# =========================
+dedup_pay_prod:
+  stage: deploy
+  resource_group: prod
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[dedup-pay\]/'
+      when: on_success
+  tags:
+    - prod
+  script:
+    - bash scripts/migration/ci/dedup-payments.sh
+
+# =========================
+# TEMP: x100 ortiqcha ko'paytirilgan narxlarni tuzatish — [fix-x100] gate.
+# [apply] bilan yozadi. Qaytarish: migration.price_x100_fix_log.
+# =========================
+fix_x100_prod:
+  stage: deploy
+  resource_group: prod
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[fix-x100\]/'
+      when: on_success
+  tags:
+    - prod
+  script:
+    - bash scripts/migration/ci/fix-price-x100.sh
+
+# =========================
+# TEMP: eski shartnomalar mahsulotlarini kochirish — [mig-products] gate.
+# trust.contract.products (JSON) -> document.products. [apply] bilan yozadi,
+# aks holda PREVIEW. Idempotent (deterministik uuid_v5 + ON CONFLICT DO NOTHING).
+# =========================
+mig_products_prod:
+  stage: deploy
+  resource_group: prod
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[mig-products\]/'
+      when: on_success
+  tags:
+    - prod
+  script:
+    - bash scripts/migration/ci/mig-products.sh
+
+# =========================
+# TEMP: hamma shartnoma shabloniga Talabnoma+Da'vo shablonlarini yaratish
+# — [mig-notice-claim] gate. [apply] bilan yozadi, aks holda PREVIEW.
+# Idempotent (deterministik uuid_v5 + ON CONFLICT DO NOTHING).
+# =========================
+mig_notice_claim_prod:
+  stage: deploy
+  resource_group: prod
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[mig-notice-claim\]/'
+      when: on_success
+  tags:
+    - prod
+  script:
+    - bash scripts/migration/ci/mig-notice-claim.sh
+
+# =========================
+# TEMP: to'lov/kechiktirish so'rovlarini to'g'ri to'lovga qayta bog'lash — [fix-payreq].
+# [apply] bilan yozadi. Qaytarish: migration.payreq_fix_log.
+# =========================
+fix_payreq_prod:
+  stage: deploy
+  resource_group: prod
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[fix-payreq\]/'
+      when: on_success
+  tags:
+    - prod
+  script:
+    - bash scripts/migration/ci/fix-payreq-links.sh
+
+# =========================
+# TEMP: paid_amount ortiqcha x100 tuzatish — [fix-paid-x100] gate.
+# [apply] bilan yozadi. Qaytarish: migration.paid_x100_fix_log.
+# =========================
+fix_paid_x100_prod:
+  stage: deploy
+  resource_group: prod
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[fix-paid-x100\]/'
+      when: on_success
+  tags:
+    - prod
+  script:
+    - bash scripts/migration/ci/fix-paid-x100.sh
+
+# TEMP: qolgan imkonsiz paid_amount qatorlari — [fix-paid-imp] gate.
+fix_paid_imp_prod:
+  stage: deploy
+  resource_group: prod
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "prod" && $CI_COMMIT_TITLE =~ /\[fix-paid-imp\]/'
+      when: on_success
+  tags:
+    - prod
+  script:
+    - bash scripts/migration/ci/fix-paid-impossible.sh

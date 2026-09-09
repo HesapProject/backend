@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Kechiktirish so'rovlarini alohida jadvalga ajratish. delay_request — payment_requests bilan
+         bir xil struktura (LIKE ... INCLUDING ALL). Mavjud type='DELAY' qatorlar ko'chiriladi va
+         payment_requests'dan o'chiriladi. So'ng payment_requests endi faqat to'lov so'rovlari. -->
+    <changeSet id="20260620-02-split-delay-request-table" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            CREATE TABLE IF NOT EXISTS document.delay_requests
+                (LIKE document.payment_requests INCLUDING ALL);
+
+            INSERT INTO document.delay_requests
+            SELECT * FROM document.payment_requests WHERE type = 'DELAY';
+
+            DELETE FROM document.payment_requests WHERE type = 'DELAY';
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

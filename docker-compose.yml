@@ -1,0 +1,203 @@
+version: '3.8'
+
+services:
+
+  #  frontend:
+  #    container_name: frontend
+  #    image: frontend:latest
+  #    restart: on-failure
+  #    build:
+  #      context: ../frontend
+  #      dockerfile: Dockerfile
+  #      args:
+  #        version: 1.0.0-SNAPSHOT
+  #    ports:
+  #      - "9090:80"
+  #    networks:
+  #      - finance
+  #    volumes:
+  #      - ../frontend:/app
+
+  business-gateway:
+    container_name: business-gateway
+    image: business-gateway:latest
+    restart: on-failure
+    build:
+      context: .
+      dockerfile: ./api-gateway/Dockerfile
+      args:
+        version: ${VERSION}
+    environment:
+      MAIN_SERVICE: http://main:8001
+      LOG_SERVICE: http://log:8003
+      FILE_SERVICE: http://file:8004
+      DOCUMENT_SERVICE: http://document:8005
+      INTEGRATION_SERVICE: http://integration:8007
+    ports:
+      - "8000:8000"
+    networks:
+      - hesap
+    volumes:
+      - ./api-gateway/build/libs/api-gateway-${VERSION}.jar:/api-gateway.jar
+    depends_on:
+      - main
+
+  main:
+    container_name: main-service
+    image: main:latest
+    restart: on-failure
+    build:
+      context: .
+      dockerfile: ./service/main/Dockerfile
+      args:
+        version: ${VERSION}
+    environment:
+      POSTGRES_SERVER: postgres:5435
+      POSTGRES_USER: $POSTGRES_USERNAME
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+      RABBIT_HOST: businessmq
+      RABBIT_PORT: 5672
+      RABBIT_USERNAME: $RABBIT_USERNAME
+      RABBIT_PASSWORD: $RABBIT_PASSWORD
+      MAIN_SERVICE: http://main:8001
+      INTEGRATION_SERVICE: http://integration:8007
+      DOCUMENT_SERVICE: http://document:8005
+    ports:
+      - "8001:8001"
+    networks:
+      - hesap
+    volumes:
+      - ./service/main/build/libs/main-${VERSION}.jar:/main.jar
+
+  log:
+    container_name: log-service
+    image: log:latest
+    restart: on-failure
+    build:
+      context: .
+      dockerfile: ./service/log/Dockerfile
+      args:
+        version: ${VERSION}
+    environment:
+      POSTGRES_SERVER: postgres:5435
+      POSTGRES_USER: $POSTGRES_USERNAME
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+      RABBIT_HOST: businessmq
+      RABBIT_PORT: 5672
+      RABBIT_USERNAME: $RABBIT_USERNAME
+      RABBIT_PASSWORD: $RABBIT_PASSWORD
+      MAIN_SERVICE: http://main:8001
+    ports:
+      - "8003:8003"
+    networks:
+      - hesap
+    volumes:
+      - ./service/log/build/libs/log-${VERSION}.jar:/log.jar
+
+  file:
+    container_name: file-service
+    image: file:latest
+    restart: on-failure
+    build:
+      context: .
+      dockerfile: ./service/file/Dockerfile
+      args:
+        version: ${VERSION}
+    environment:
+      POSTGRES_SERVER: postgres:5435
+      POSTGRES_USER: $POSTGRES_USERNAME
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+      #      RABBIT_HOST: rabbitmq
+      #      RABBIT_PORT: 5672
+      #      RABBIT_USERNAME: $RABBIT_USERNAME
+      #      RABBIT_PASSWORD: $RABBIT_PASSWORD
+      MAIN_SERVICE: http://main:8001
+      # CDN public URL — nginx reverse-proxy cdn.hesap.uz → DigitalOcean Spaces
+      CDN_PUBLIC_BASE_URL: ${CDN_PUBLIC_BASE_URL:-https://cdn.hesap.uz}
+    ports:
+      - "8004:8004"
+    networks:
+      - hesap
+    volumes:
+      - ./service/file/build/libs/file-${VERSION}.jar:/file.jar
+      - /var/www/html/files:/files
+
+  document:
+    container_name: document-service
+    image: document:latest
+    restart: on-failure
+    build:
+      context: .
+      dockerfile: ./service/document/Dockerfile
+      args:
+        version: ${VERSION}
+    environment:
+      POSTGRES_SERVER: postgres:5435
+      POSTGRES_USER: $POSTGRES_USERNAME
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+      RABBIT_HOST: businessmq
+      RABBIT_PORT: 5672
+      RABBIT_USERNAME: $RABBIT_USERNAME
+      RABBIT_PASSWORD: $RABBIT_PASSWORD
+      MAIN_SERVICE: http://main:8001
+      IMZO_SERVICE: http://hesap-imzo:8080
+      INTEGRATION_SERVICE: http://integration:8007
+    ports:
+      - "8005:8005"
+    networks:
+      - hesap
+    volumes:
+      - ./service/document/build/libs/document-${VERSION}.jar:/document.jar
+
+  integration:
+    container_name: integration-service
+    image: integration:latest
+    restart: on-failure
+    build:
+      context: .
+      dockerfile: ./service/integration/Dockerfile
+      args:
+        version: ${VERSION}
+    environment:
+      POSTGRES_SERVER: postgres:5435
+      POSTGRES_USER: $POSTGRES_USERNAME
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+      RABBIT_HOST: businessmq
+      RABBIT_PORT: 5672
+      RABBIT_USERNAME: $RABBIT_USERNAME
+      RABBIT_PASSWORD: $RABBIT_PASSWORD
+      MAIN_SERVICE: http://main:8001
+      PLUM_LOGIN: $PLUM_LOGIN
+      PLUM_PASSWORD: $PLUM_PASSWORD
+      GOOGLE_CREDENTIALS_PATH: /opt/keys/google-service-account.json
+    ports:
+      - "8007:8007"
+    networks:
+      - hesap
+    volumes:
+      - ./service/integration/build/libs/integration-${VERSION}.jar:/integration.jar
+      - /opt/keys/google-service-account.json:/opt/keys/google-service-account.json:ro
+
+  ### ---------------------------- DB & PROCESSING TOOLS ---------------------------
+  businessmq:
+    container_name: businessmq
+    image: rabbitmq:4.0.5-management
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: $RABBIT_USERNAME
+      RABBITMQ_DEFAULT_PASS: $RABBIT_PASSWORD
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: -rabbit disk_free_limit 4337418240 -rabbit memory_high_watermark 0.98
+      TZ: "Asia/Tashkent"
+    ports:
+      - "35672:5672"
+      - "25672:15672"
+    networks:
+      - hesap
+    volumes:
+      - /var/docker-data/rabbitmq_volume:/var/lib/rabbitmq
+      - "./rabbit_enabled_plugins:/etc/rabbitmq/enabled_plugins"
+
+networks:
+  hesap:
+    name: hesap-postgres
+    external: true

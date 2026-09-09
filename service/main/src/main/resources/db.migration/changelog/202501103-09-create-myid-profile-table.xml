@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+    <changeSet id="create-myid-profile-table" author="elmurod">
+        <sql>
+            CREATE TABLE IF NOT EXISTS "user".myid_profile (
+                id UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                user_id UUID,
+                first_name TEXT,
+                middle_name TEXT,
+                last_name TEXT,
+                first_name_en TEXT,
+                last_name_en TEXT,
+                pinfl TEXT,
+                gender TEXT,
+                birth_place TEXT,
+                birth_date TEXT,
+                nationality TEXT,
+                citizenship TEXT,
+                sdk_hash TEXT,
+                last_update_pass_data TEXT,
+                last_update_address TEXT,
+                pass_data TEXT,
+                issued_by TEXT,
+                issued_by_id TEXT,
+                issued_date TEXT,
+                expiry_date TEXT,
+                doc_type TEXT,
+                doc_type_id TEXT,
+                doc_type_id_cbu TEXT,
+                phone TEXT,
+                email TEXT,
+                permanent_address TEXT,
+                temporary_address TEXT,
+
+                pr_mfy TEXT,
+                pr_mfy_id TEXT,
+                pr_region TEXT,
+                pr_address TEXT,
+                pr_country TEXT,
+                pr_cadastre TEXT,
+                pr_district TEXT,
+                pr_region_id TEXT,
+                pr_country_id TEXT,
+                pr_district_id TEXT,
+                pr_region_id_cbu TEXT,
+                pr_country_id_cbu TEXT,
+                pr_district_id_cbu TEXT,
+                pr_registration_date TEXT,
+
+                tr_mfy TEXT,
+                tr_mfy_id TEXT,
+                tr_region TEXT,
+                tr_address TEXT,
+                tr_cadastre TEXT,
+                tr_district TEXT,
+                tr_date_from TEXT,
+                tr_date_till TEXT,
+                tr_region_id TEXT,
+                tr_district_id TEXT,
+                tr_region_id_cbu TEXT,
+                tr_district_id_cbu TEXT,
+
+                created_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+        </sql>
+    </changeSet>
+</databaseChangeLog>

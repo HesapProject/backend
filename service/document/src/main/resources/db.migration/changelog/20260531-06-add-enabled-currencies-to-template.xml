@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Shablon uchun yo'l qo'yilgan valyutalar (kod ro'yxati).
+         Postgres TEXT[] — masalan {UZS, USD}. NULL bo'lsa cheklov yo'q. -->
+    <changeSet id="20260531-06-add-enabled-currencies-to-template" author="qodiriy">
+        <sql>
+            ALTER TABLE document.template ADD COLUMN enabled_currencies TEXT[];
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

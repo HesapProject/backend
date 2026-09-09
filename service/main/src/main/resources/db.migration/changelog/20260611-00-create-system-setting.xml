@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Tizim sozlamalari (key-value). Masalan: turanix.phone-check-enabled.
+         Control "Sozlamalar" bo'limidan boshqariladi. -->
+    <changeSet id="20260611-00-create-system-setting" author="qodiriy">
+        <sql>
+            CREATE TABLE IF NOT EXISTS "user".system_setting (
+                setting_key   VARCHAR(128) PRIMARY KEY,
+                setting_value TEXT
+            );
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

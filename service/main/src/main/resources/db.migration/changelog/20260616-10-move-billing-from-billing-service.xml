@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Billing jadvallari billing servisdan user servisga ko'chiriladi.
+         tariff/packages/promo/user_used_document/purchase_history: create+copy+drop.
+         balance/transaction: integration (Payme/Click) bilan ULASHILGAN -> create+copy,
+         eski billing.balance/transaction DROP QILINMAYDI (keyingi reliz, integration ham
+         "user" schema'ga repoint qilingach). -->
+
+    <changeSet id="20260616-10-create-billing-tables" author="qodiriy">
+        <sql>
+            CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+            CREATE TABLE IF NOT EXISTS "user".balance (
+                id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                unique_id          UUID,
+                balance_type       TEXT,
+                balance            DOUBLE PRECISION DEFAULT 0,
+                expire_date        TIMESTAMP,
+                tariff_id          UUID,
+                billing_type       TEXT DEFAULT 'B2B',
+                activation_date    TIMESTAMP,
+                deleted            BOOLEAN DEFAULT FALSE,
+                created_date       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                version            BIGINT
+            );
+            CREATE INDEX IF NOT EXISTS user_balance_billing_type ON "user".balance(billing_type);
+            CREATE INDEX IF NOT EXISTS user_balance_unique_id ON "user".balance(unique_id);
+
+            CREATE TABLE IF NOT EXISTS "user".transaction (
+                id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                balance_id         UUID,
+                user_id            UUID,
+                company_id         UUID,
+                type               TEXT,
+                amount             DOUBLE PRECISION DEFAULT 0,
+                duration           INTEGER,
+                billing_type       TEXT DEFAULT 'B2B',
+                timestamp          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE INDEX IF NOT EXISTS user_transaction_billing_type ON "user".transaction(billing_type);
+
+            CREATE TABLE IF NOT EXISTS "user".tariff (
+                id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                name_uz TEXT, name_ru TEXT, name_en TEXT,
+                description_uz TEXT, description_ru TEXT, description_en TEXT,
+                price              DOUBLE PRECISION,
+                stars              INTEGER,
+                duration           INTEGER,
+                templates          TEXT,
+                type               TEXT,
+                deleted            BOOLEAN DEFAULT FALSE,
+                created_date       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS "user".packages (
+                id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                name_uz TEXT, name_ru TEXT, name_en TEXT,
+                description_uz TEXT, description_ru TEXT, description_en TEXT,
+                price              DOUBLE PRECISION,
+                duration           INTEGER,
+                stars              INTEGER,
+                templates          TEXT,
+                type               TEXT,
+                deleted            BOOLEAN DEFAULT FALSE,
+                created_date       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS "user".promo (
+                id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                code               TEXT,
+                discount_type      TEXT,
+                discount_value     DOUBLE PRECISION,
+                from_price         DOUBLE PRECISION,
+                from_date          DATE,
+                to_date            DATE,
+                deleted            BOOLEAN DEFAULT FALSE,
+                created_date       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS "user".user_used_document (
+                id                         UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                user_id                    UUID NOT NULL,
+                tariff_id                  UUID,
+                template_id                UUID,
+                count                      INTEGER NOT NULL DEFAULT 0,
+                used                       INTEGER NOT NULL DEFAULT 0,
+                expired_date               TIMESTAMP,
+                type                       TEXT,
+                balance_id                 UUID,
+                template_distribution_type TEXT,
+                deleted                    BOOLEAN DEFAULT FALSE,
+                created_date               TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                version                    BIGINT DEFAULT 0
+            );
+            CREATE INDEX IF NOT EXISTS user_uud_user ON "user".user_used_document(user_id);
+            CREATE INDEX IF NOT EXISTS user_uud_template ON "user".user_used_document(template_id);
+
+            CREATE TABLE IF NOT EXISTS "user".purchase_history (
+                id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                user_id            UUID NOT NULL,
+                type               VARCHAR(32) NOT NULL,
+                source_id          UUID,
+                balance_id         UUID,
+                name_uz VARCHAR(255), name_ru VARCHAR(255), name_en VARCHAR(255),
+                description_uz TEXT, description_ru TEXT, description_en TEXT,
+                price              DOUBLE PRECISION,
+                stars              INTEGER,
+                duration           INTEGER,
+                templates          TEXT,
+                created_date       TIMESTAMPTZ DEFAULT NOW()
+            );
+            CREATE INDEX IF NOT EXISTS user_purchase_history_user ON "user".purchase_history(user_id);
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260616-11-copy-billing-data" author="qodiriy">
+        <preConditions onFail="MARK_RAN">
+            <tableExists schemaName="billing" tableName="tariff"/>
+        </preConditions>
+        <sql>
+            INSERT INTO "user".balance
+                (id, unique_id, balance_type, balance, expire_date, tariff_id, billing_type,
+                 activation_date, deleted, created_date, last_modified_date, version)
+            SELECT id, unique_id, balance_type, balance, expire_date, tariff_id, billing_type,
+                   activation_date, deleted, created_date, last_modified_date, version
+            FROM billing.balance ON CONFLICT (id) DO NOTHING;
+
+            INSERT INTO "user".transaction
+                (id, balance_id, user_id, company_id, type, amount, duration, billing_type, timestamp)
+            SELECT id, balance_id, user_id, company_id, type, amount, duration, billing_type, timestamp
+            FROM billing.transaction ON CONFLICT (id) DO NOTHING;
+
+            INSERT INTO "user".tariff
+                (id, name_uz, name_ru, name_en, description_uz, description_ru, description_en,
+                 price, stars, duration, templates, type, deleted, created_date, last_modified_date)
+            SELECT id, name_uz, name_ru, name_en, description_uz, description_ru, description_en,
+                   price, stars, duration, templates, type, deleted, created_date, last_modified_date
+            FROM billing.tariff ON CONFLICT (id) DO NOTHING;
+
+            INSERT INTO "user".packages
+                (id, name_uz, name_ru, name_en, description_uz, description_ru, description_en,
+                 price, duration, stars, templates, type, deleted, created_date, last_modified_date)
+            SELECT id, name_uz, name_ru, name_en, description_uz, description_ru, description_en,
+                   price, duration, stars, templates, type, deleted, created_date, last_modified_date
+            FROM billing.packages ON CONFLICT (id) DO NOTHING;
+
+            INSERT INTO "user".promo
+                (id, code, discount_type, discount_value, from_price, from_date, to_date,
+                 deleted, created_date, last_modified_date)
+            SELECT id, code, discount_type, discount_value, from_price, from_date, to_date,
+                   deleted, created_date, last_modified_date
+            FROM billing.promo ON CONFLICT (id) DO NOTHING;
+
+            INSERT INTO "user".user_used_document
+                (id, user_id, tariff_id, template_id, count, used, expired_date, type, balance_id,
+                 template_distribution_type, deleted, created_date, last_modified_date, version)
+            SELECT id, user_id, tariff_id, template_id, count, used, expired_date, type, balance_id,
+                   template_distribution_type, deleted, created_date, last_modified_date, version
+            FROM billing.user_used_document ON CONFLICT (id) DO NOTHING;
+
+            INSERT INTO "user".purchase_history
+                (id, user_id, type, source_id, balance_id, name_uz, name_ru, name_en,
+                 description_uz, description_ru, description_en, price, stars, duration, templates, created_date)
+            SELECT id, user_id, type, source_id, balance_id, name_uz, name_ru, name_en,
+                   description_uz, description_ru, description_en, price, stars, duration, templates, created_date
+            FROM billing.purchase_history ON CONFLICT (id) DO NOTHING;
+        </sql>
+    </changeSet>
+
+    <!-- Faqat ulashilmagan jadvallar drop qilinadi. balance/transaction QOLDIRILADI. -->
+    <changeSet id="20260616-12-drop-billing-nonshared-tables" author="qodiriy">
+        <sql>
+            DROP TABLE IF EXISTS billing.user_used_document;
+            DROP TABLE IF EXISTS billing.purchase_history;
+            DROP TABLE IF EXISTS billing.tariff;
+            DROP TABLE IF EXISTS billing.packages;
+            DROP TABLE IF EXISTS billing.promo;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

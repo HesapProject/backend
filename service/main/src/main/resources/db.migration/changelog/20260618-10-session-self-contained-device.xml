@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- device jadvali olib tashlanadi; session o'zi-yetarli bo'ladi (qurilma maydonlari ichida).
+         deviceId == sessionId, verify sessiyasida user_id null. -->
+    <changeSet id="20260618-10-session-add-device-fields" author="qodiriy">
+        <sql>
+            ALTER TABLE "user".session
+                ADD COLUMN IF NOT EXISTS uuid             TEXT,
+                ADD COLUMN IF NOT EXISTS phone            TEXT,
+                ADD COLUMN IF NOT EXISTS os_version       TEXT,
+                ADD COLUMN IF NOT EXISTS os               TEXT,
+                ADD COLUMN IF NOT EXISTS model            TEXT,
+                ADD COLUMN IF NOT EXISTS brand            TEXT,
+                ADD COLUMN IF NOT EXISTS type             TEXT,
+                ADD COLUMN IF NOT EXISTS device           TEXT,
+                ADD COLUMN IF NOT EXISTS fcm_token        TEXT,
+                ADD COLUMN IF NOT EXISTS is_verify_device BOOLEAN NOT NULL DEFAULT FALSE;
+
+            ALTER TABLE "user".session ALTER COLUMN user_id DROP NOT NULL;
+        </sql>
+    </changeSet>
+
+    <!-- Mavjud sessiyalarga device ma'lumotini ko'chirish (device jadval hali bor bo'lsa). -->
+    <changeSet id="20260618-10-session-copy-device-data" author="qodiriy">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="device" schemaName="user"/>
+        </preConditions>
+        <sql>
+            UPDATE "user".session s
+            SET uuid       = d.uuid,
+                phone      = d.phone,
+                os_version = d.os_version,
+                os         = d.os,
+                model      = d.model,
+                brand      = d.brand,
+                type       = d.type,
+                device     = d.device,
+                fcm_token  = d.fcm_token
+            FROM "user".device d
+            WHERE s.device_id = d.id;
+        </sql>
+    </changeSet>
+
+    <!-- device_id ustuni va device jadvalini olib tashlash. -->
+    <changeSet id="20260618-10-drop-device-table" author="qodiriy">
+        <sql>
+            ALTER TABLE "user".session DROP COLUMN IF EXISTS device_id;
+            DROP TABLE IF EXISTS "user".device;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

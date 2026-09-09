@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+    <changeSet id="create-tables" author="isoqhakimov (generated)">
+        <sql>
+
+            CREATE TABLE IF NOT EXISTS "document".document(
+                id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                company_id         UUID,
+                template_id        UUID,
+                number             TEXT,
+                status             TEXT,
+                price              DOUBLE PRECISION,
+                deleted            BOOLEAN DEFAULT FALSE,
+                created_date       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                version            BIGINT
+            );
+
+            CREATE TABLE IF NOT EXISTS "document".document_value(
+                id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                position           INTEGER,
+                value              TEXT,
+                document_id        UUID,
+                template_id        UUID,
+                template_field_id  UUID,
+                key_name           TEXT,
+                deleted            BOOLEAN DEFAULT FALSE,
+                created_date       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+                );
+
+        </sql>
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- claims: document_id→contract_id; seller_id→from_in (PINFL), buyer_id→to_in (PINFL).
+         from_in/to_in contracts.seller_in/buyer_in'dan backfill, so'ng eski UUID ustunlar drop. -->
+    <changeSet id="20260620-08-restructure-claims-columns" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE document.claims RENAME COLUMN document_id TO contract_id;
+            ALTER TABLE document.claims ADD COLUMN IF NOT EXISTS from_in TEXT;
+            ALTER TABLE document.claims ADD COLUMN IF NOT EXISTS to_in TEXT;
+
+            UPDATE document.claims c
+               SET from_in = d.seller_in, to_in = d.buyer_in
+              FROM document.contracts d
+             WHERE d.id = c.contract_id;
+
+            ALTER TABLE document.claims DROP COLUMN IF EXISTS seller_id;
+            ALTER TABLE document.claims DROP COLUMN IF EXISTS buyer_id;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

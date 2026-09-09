@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+    
+    <!-- Add new columns for client users (C2C migration from hesap) -->
+    <changeSet id="add-client-user-columns" author="elmurod">
+        <sql>
+            -- Username for client users (C2C)
+            ALTER TABLE "user".user ADD COLUMN IF NOT EXISTS username TEXT;
+            
+            -- Profile image URL
+            ALTER TABLE "user".user ADD COLUMN IF NOT EXISTS image TEXT;
+            
+            -- User biography
+            ALTER TABLE "user".user ADD COLUMN IF NOT EXISTS bio TEXT;
+            
+            -- Birthday in string format
+            ALTER TABLE "user".user ADD COLUMN IF NOT EXISTS birthday TEXT;
+            
+            -- Gender: true = male, false = female
+            ALTER TABLE "user".user ADD COLUMN IF NOT EXISTS is_man BOOLEAN;
+            
+            -- Create unique index on username (only for non-null values)
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_user_username_unique 
+                ON "user".user (LOWER(username)) 
+                WHERE username IS NOT NULL AND deleted = FALSE;
+            
+            -- Create index on phone for faster lookup
+            CREATE INDEX IF NOT EXISTS idx_user_phone 
+                ON "user".user (phone) 
+                WHERE deleted = FALSE;
+            
+            -- Create index on type for filtering by user type
+            CREATE INDEX IF NOT EXISTS idx_user_type 
+                ON "user".user (type) 
+                WHERE deleted = FALSE;
+        </sql>
+    </changeSet>
+    
+</databaseChangeLog>

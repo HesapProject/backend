@@ -1,0 +1,6 @@
+# Ignore java files
+src/
+gradle/
+.gradle/
+*.java
+*.class

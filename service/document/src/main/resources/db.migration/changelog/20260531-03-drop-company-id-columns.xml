@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+  <changeSet id="drop-company-id-columns" author="qodiriy">
+    <sql>
+        ALTER TABLE document.document DROP COLUMN IF EXISTS buyer_company_id;
+        ALTER TABLE document.document DROP COLUMN IF EXISTS seller_company_id;
+
+        ALTER TABLE document.payment_schedule DROP COLUMN IF EXISTS buyer_company_id;
+        ALTER TABLE document.payment_schedule DROP COLUMN IF EXISTS seller_company_id;
+
+        ALTER TABLE document.payment_schedule_request DROP COLUMN IF EXISTS buyer_company_id;
+        ALTER TABLE document.payment_schedule_request DROP COLUMN IF EXISTS seller_company_id;
+
+        ALTER TABLE document.paid_schedule DROP COLUMN IF EXISTS buyer_company_id;
+        ALTER TABLE document.paid_schedule DROP COLUMN IF EXISTS seller_company_id;
+    </sql>
+  </changeSet>
+</databaseChangeLog>

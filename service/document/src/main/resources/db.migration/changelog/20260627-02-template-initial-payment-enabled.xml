@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Shablon imkoniyatlariga boshlang'ich to'lov toggle'i (initial_payment_enabled).
+         Guvohlik/Mahsulotlardek. Mavjud shablonlarga yoqiladi (DEFAULT TRUE). Summa
+         o'zi shartnomada (document.initial_payment) qoladi — bu faqat yoqish/o'chirish. -->
+    <changeSet id="20260627-02-template-initial-payment-enabled" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE document.template ADD COLUMN IF NOT EXISTS initial_payment_enabled BOOLEAN DEFAULT TRUE;
+            UPDATE document.template SET initial_payment_enabled = TRUE WHERE initial_payment_enabled IS NULL;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

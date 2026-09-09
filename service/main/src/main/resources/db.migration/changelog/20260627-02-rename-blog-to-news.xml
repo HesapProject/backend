@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- blog → news rename (jadval). Kod NewsEntity → "user".news.
+         Robust: faqat blog mavjud va news yo'q bo'lsa rename (news allaqachon bo'lsa
+         fail bermaydi — idempotent). -->
+    <changeSet id="20260627-02-rename-blog-to-news" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql splitStatements="false">
+            DO $$
+            BEGIN
+              IF EXISTS (SELECT 1 FROM information_schema.tables
+                           WHERE table_schema = 'user' AND table_name = 'blog')
+                 AND NOT EXISTS (SELECT 1 FROM information_schema.tables
+                           WHERE table_schema = 'user' AND table_name = 'news') THEN
+                ALTER TABLE "user".blog RENAME TO news;
+              END IF;
+            END $$;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

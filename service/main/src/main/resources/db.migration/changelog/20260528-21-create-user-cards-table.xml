@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Karta yaratilgach integration servisdan ko'chiriladigan kartalar.
+         cardNumber maskalangan holda saqlanadi (masalan 9860****1976). -->
+    <changeSet id="20260528-21-create-user-cards-table" author="system">
+        <sql>
+            CREATE TABLE IF NOT EXISTS "user".user_cards
+            (
+                id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                user_id            UUID NOT NULL,
+                card_id            BIGINT,
+                card_number        TEXT,
+                expire_date        TEXT,
+                type               TEXT,
+                created_date       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_user_cards_user_card
+                ON "user".user_cards (user_id, card_id);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

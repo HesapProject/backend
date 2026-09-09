@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+  <changeSet id="create-currency-table" author="qodiriy">
+    <sql>
+        CREATE TABLE IF NOT EXISTS document.currency
+        (
+            id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+            code               VARCHAR(10)                                 NOT NULL UNIQUE,
+            name_uz            TEXT,
+            name_ru            TEXT,
+            name_en            TEXT,
+            symbol             VARCHAR(10),
+            sort_order         INTEGER          DEFAULT 0,
+            is_active          BOOLEAN          DEFAULT TRUE               NOT NULL,
+            deleted            BOOLEAN          DEFAULT FALSE              NOT NULL,
+            created_date       TIMESTAMP,
+            last_modified_date TIMESTAMP,
+            version            BIGINT           DEFAULT 0
+        );
+
+        INSERT INTO document.currency (code, name_uz, name_ru, name_en, symbol, sort_order, is_active)
+        VALUES
+          ('UZS', 'So''m', 'Сум', 'Som', 'so''m', 1, TRUE),
+          ('USD', 'AQSh dollari', 'Доллар США', 'US Dollar', '$', 2, TRUE),
+          ('RUB', 'Rossiya rubli', 'Российский рубль', 'Russian Ruble', '₽', 3, TRUE)
+        ON CONFLICT (code) DO NOTHING;
+    </sql>
+  </changeSet>
+</databaseChangeLog>

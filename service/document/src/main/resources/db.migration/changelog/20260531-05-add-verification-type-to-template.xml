@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Tasdiqlash turi: jismoniy va yuridik shaxslar uchun alohida.
+         VerificationType enum: OTP_SMS | MY_ID | E_IMZO. -->
+    <changeSet id="20260531-05-add-verification-type-to-template" author="qodiriy">
+        <sql>
+            ALTER TABLE document.template ADD COLUMN individual_verification_type VARCHAR(32);
+            ALTER TABLE document.template ADD COLUMN legal_verification_type      VARCHAR(32);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

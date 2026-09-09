@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- contracts: buyer_user_id/seller_user_id (UUID) olib tashlandi — taraflar endi
+         faqat buyer_in/seller_in (PINFL/STIR) bilan. UUID kerakda user-service'dan tiklanadi. -->
+    <changeSet id="20260621-02-drop-contract-party-user-ids" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            -- Xavfsizlik: buyer_in/seller_in null bo'lgan eski yozuvlarni UUID'dan backfill (drop'dan oldin).
+            UPDATE document.contracts c
+               SET buyer_in = (SELECT COALESCE(u.pinfl, u.tin) FROM "user"."user" u WHERE u.id = c.buyer_user_id)
+             WHERE c.buyer_in IS NULL AND c.buyer_user_id IS NOT NULL;
+            UPDATE document.contracts c
+               SET seller_in = (SELECT COALESCE(u.pinfl, u.tin) FROM "user"."user" u WHERE u.id = c.seller_user_id)
+             WHERE c.seller_in IS NULL AND c.seller_user_id IS NOT NULL;
+
+            ALTER TABLE document.contracts DROP COLUMN IF EXISTS buyer_user_id;
+            ALTER TABLE document.contracts DROP COLUMN IF EXISTS seller_user_id;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

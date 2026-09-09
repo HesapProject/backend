@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Shablon mahsulot nomi/yorlig'i (taraf nomlaridek, 3 til) — PDF mahsulot
+         ustuni sarlavhasi. Bo'sh bo'lsa render'da "Mahsulot nomi" fallback. -->
+    <changeSet id="20260707-00-add-product-name-to-template" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE document.contract_template
+                ADD COLUMN IF NOT EXISTS product_name_uz VARCHAR(255),
+                ADD COLUMN IF NOT EXISTS product_name_ru VARCHAR(255),
+                ADD COLUMN IF NOT EXISTS product_name_en VARCHAR(255);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

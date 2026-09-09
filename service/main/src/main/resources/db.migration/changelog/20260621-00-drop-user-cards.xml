@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Kartalar endi faqat integration servisda (billing.plum_cards). Main "user".user_cards
+         (integration push qilgan nusxa) endi keraksiz — olib tashlanadi. -->
+    <changeSet id="20260621-00-drop-user-cards" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            DROP TABLE IF EXISTS "user".user_cards;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

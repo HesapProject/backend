@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+    <changeSet id="create-tables" author="elmurod">
+        <sql>
+
+            CREATE TABLE IF NOT EXISTS "log".eskiz_log
+            (
+                id
+                UUID
+                PRIMARY
+                KEY
+                DEFAULT
+                uuid_generate_v4
+            (
+            ) NOT NULL,
+                phone TEXT,
+                content TEXT,
+                is_failed BOOLEAN,
+                error TEXT,
+                timestamp TIMESTAMP ,
+                created_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+                );
+
+        </sql>
+    </changeSet>
+</databaseChangeLog>

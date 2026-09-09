@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- contracts + to'lov jadvallariga currency_id (currencies jadvaliga FK) qo'shish.
+         Mavjud currency (varchar kod) dan backfill: currencies.code bo'yicha.
+         currency ustuni hozircha qoladi (frontendlar currencyId ga ko'chgach drop qilinadi).
+         ALTER TABLE IF EXISTS + ADD COLUMN IF NOT EXISTS idempotent. DO $$ ishlatilmaydi. -->
+    <changeSet id="20260621-10-add-currency-id-columns" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE IF EXISTS document.contracts             ADD COLUMN IF NOT EXISTS currency_id uuid;
+            ALTER TABLE IF EXISTS document.payments              ADD COLUMN IF NOT EXISTS currency_id uuid;
+            ALTER TABLE IF EXISTS document.payment_transactions  ADD COLUMN IF NOT EXISTS currency_id uuid;
+            ALTER TABLE IF EXISTS document.payment_requests      ADD COLUMN IF NOT EXISTS currency_id uuid;
+            ALTER TABLE IF EXISTS document.delay_requests        ADD COLUMN IF NOT EXISTS currency_id uuid;
+
+            UPDATE document.contracts t            SET currency_id = c.id FROM document.currencies c WHERE c.code = t.currency AND t.currency_id IS NULL;
+            UPDATE document.payments t             SET currency_id = c.id FROM document.currencies c WHERE c.code = t.currency AND t.currency_id IS NULL;
+            UPDATE document.payment_transactions t SET currency_id = c.id FROM document.currencies c WHERE c.code = t.currency AND t.currency_id IS NULL;
+            UPDATE document.payment_requests t     SET currency_id = c.id FROM document.currencies c WHERE c.code = t.currency AND t.currency_id IS NULL;
+            UPDATE document.delay_requests t       SET currency_id = c.id FROM document.currencies c WHERE c.code = t.currency AND t.currency_id IS NULL;
+
+            CREATE INDEX IF NOT EXISTS idx_contracts_currency_id ON document.contracts (currency_id);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

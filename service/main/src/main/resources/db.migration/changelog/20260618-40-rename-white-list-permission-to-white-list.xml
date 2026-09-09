@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Eski white_list CRUD jadvali (ishlatilmasdi) o'chiriladi; white_list_permission
+         (user->user grantlar) white_list ga qayta nomlanadi. -->
+    <changeSet id="20260618-40-drop-old-white-list" author="qodiriy">
+        <preConditions onFail="MARK_RAN">
+            <tableExists schemaName="user" tableName="white_list"/>
+        </preConditions>
+        <sql>DROP TABLE "user".white_list;</sql>
+    </changeSet>
+
+    <changeSet id="20260618-40-rename-white-list-permission-to-white-list" author="qodiriy">
+        <preConditions onFail="MARK_RAN">
+            <tableExists schemaName="user" tableName="white_list_permission"/>
+        </preConditions>
+        <sql>ALTER TABLE "user".white_list_permission RENAME TO white_list;</sql>
+    </changeSet>
+
+</databaseChangeLog>

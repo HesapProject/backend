@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Sessiyalar endi o'chirilmaydi — arxivlanadi (logout/admin delete). -->
+    <changeSet id="20260617-00-session-archived" author="qodiriy">
+        <sql>
+            ALTER TABLE "user".session ADD COLUMN IF NOT EXISTS archived BOOLEAN NOT NULL DEFAULT FALSE;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

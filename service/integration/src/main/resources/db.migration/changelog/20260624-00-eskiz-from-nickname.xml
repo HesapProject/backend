@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- SMS yuboruvchi nickname sozlamasi (Eskiz). Mavjud sozlama HESAP'ga o'rnatiladi. -->
+    <changeSet id="20260624-00-eskiz-from-nickname" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE integration.eskiz_setting ADD COLUMN IF NOT EXISTS eskiz_from TEXT;
+            UPDATE integration.eskiz_setting SET eskiz_from = 'HESAP'
+             WHERE eskiz_from IS NULL OR eskiz_from = '';
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

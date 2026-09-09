@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Shablon maydoniga product-field belgisi: true → mahsulot maydoni. -->
+    <changeSet id="20260602-02-add-product-field-to-template-field" author="qodiriy">
+        <sql>
+            ALTER TABLE document.template_field
+                ADD COLUMN product_field BOOLEAN DEFAULT FALSE;
+        </sql>
+    </changeSet>
+
+    <!-- Shartnoma mahsulotlari: nom + summa + product field qiymatlari (JSON). -->
+    <changeSet id="20260602-02-create-contract-product-table" author="qodiriy">
+        <sql>
+            CREATE TABLE IF NOT EXISTS document.contract_product (
+                id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                document_id        UUID NOT NULL,
+                name               TEXT,
+                amount             DOUBLE PRECISION,
+                field_values       TEXT,
+                deleted            BOOLEAN DEFAULT FALSE NOT NULL,
+                created_date       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

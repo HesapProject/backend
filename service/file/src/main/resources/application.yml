@@ -1,0 +1,60 @@
+server:
+  port: 8004
+  forward-headers-strategy: framework
+  servlet:
+    contextPath: /
+  error:
+    whitelabel:
+      enabled: false
+
+spring:
+  application:
+    name: file-service
+
+  r2dbc:
+    url: r2dbc:postgresql://${POSTGRES_SERVER:localhost:5435}/hesap
+    username: ${POSTGRES_USERNAME:postgres}
+    password: ${POSTGRES_PASSWORD:}
+    properties:
+      schema: file
+
+  liquibase:
+    url: jdbc:postgresql://${POSTGRES_SERVER:localhost:5435}/hesap
+    user: ${POSTGRES_USERNAME:postgres}
+    password: ${POSTGRES_PASSWORD:}
+    change-log: classpath:db.migration/db.changelog-master.yaml
+    enabled: true
+    liquibase-schema: file
+
+  codec:
+    max-in-memory-size: 16MB
+
+  servlet:
+    multipart:
+      max-file-size: 16MB
+
+springdoc:
+  api-docs:
+    path: /files/v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+info:
+  app:
+    name: ${spring.application.name}
+    version: "@application.version@"
+    description: "@application.description@"
+
+
+application:
+  main-service:
+    base-url: ${MAIN_SERVICE:http://95.182.117.234:8001}
+
+cdn:
+  digitalocean:
+    access-key: ${CDN_ACCESS_KEY:}
+    secret-key: ${CDN_SECRET_KEY:}
+    bucket: ${CDN_BUCKET:cdn-hesap}
+    region: ${CDN_REGION:fra1}
+    endpoint: ${CDN_ENDPOINT:https://fra1.digitaloceanspaces.com}
+    public-base-url: ${CDN_PUBLIC_BASE_URL:https://cdn.hesap.uz}

@@ -1,0 +1,70 @@
+@host = http://localhost:8080
+@token = <YOUR_ACCESS_TOKEN>
+
+### Create C2C Document
+POST {{host}}/api/document/v1/c2c
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "sellerId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "buyerId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "templateId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "price": 100000,
+  "number": "DOC-123",
+  "witnessIds": [
+    "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+  ],
+  "values": [
+    {
+      "keyName": "test_field",
+      "value": "Test Value",
+      "position": 1,
+      "templateId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "templateFieldId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+    }
+  ]
+}
+
+### Get All Documents
+GET {{host}}/api/document/v1/c2c?page=0&size=10
+Authorization: Bearer {{token}}
+
+### Get Document By ID
+GET {{host}}/api/document/v1/c2c/{{docId}}
+Authorization: Bearer {{token}}
+
+### Send SMS Verification
+POST {{host}}/api/document/v1/c2c/{{docId}}/send-verification-sms
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "action": "PARTY_ACCEPT"
+}
+
+### Accept Party (Sign)
+POST {{host}}/api/document/v1/c2c/{{docId}}/party/accept
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "code": 123456
+}
+
+### Reject Party
+POST {{host}}/api/document/v1/c2c/{{docId}}/party/reject
+Authorization: Bearer {{token}}
+
+### Accept Witness
+POST {{host}}/api/document/v1/c2c/{{docId}}/witness/accept
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "code": 123456
+}
+
+### Reject Witness
+POST {{host}}/api/document/v1/c2c/{{docId}}/witness/reject
+Authorization: Bearer {{token}}

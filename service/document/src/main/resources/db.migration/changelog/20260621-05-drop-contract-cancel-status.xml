@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Eski ikki-tomonlama bekor qilish (buyer_cancel_status/seller_cancel_status)
+         olib tashlandi — endi cancel_requests jadvali orqali. -->
+    <changeSet id="20260621-05-drop-contract-cancel-status" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE document.contracts DROP COLUMN IF EXISTS buyer_cancel_status;
+            ALTER TABLE document.contracts DROP COLUMN IF EXISTS seller_cancel_status;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

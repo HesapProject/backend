@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <changeSet id="20260530-10-create-eimzo-setting-table" author="qodiriy">
+        <sql>
+            CREATE TABLE IF NOT EXISTS integration.eimzo_setting (
+                id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                base_url           TEXT NOT NULL,
+                created_date       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260530-10-seed-eimzo-setting" author="qodiriy">
+        <sql>
+            -- Production'dagi default e-imzo server URL'i (document-service'ning application.yml'idan).
+            -- Admin keyinroq UI orqali o'zgartirishi mumkin.
+            INSERT INTO integration.eimzo_setting (base_url)
+            SELECT 'http://localhost:8080'
+            WHERE NOT EXISTS (SELECT 1 FROM integration.eimzo_setting);
+        </sql>
+    </changeSet>
+</databaseChangeLog>

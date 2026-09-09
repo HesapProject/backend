@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Jadval nomlarini soddalashtirish: payment_schedule_request→payment_requests,
+         contract_payment→payments, report→claims, currency→currencies. FK'lar avtomatik ergashadi. -->
+    <changeSet id="20260620-01-rename-payment-report-currency-tables" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE IF EXISTS document.payment_schedule_request RENAME TO payment_requests;
+            ALTER TABLE IF EXISTS document.contract_payment RENAME TO payments;
+            ALTER TABLE IF EXISTS document.report RENAME TO claims;
+            ALTER TABLE IF EXISTS document.currency RENAME TO currencies;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

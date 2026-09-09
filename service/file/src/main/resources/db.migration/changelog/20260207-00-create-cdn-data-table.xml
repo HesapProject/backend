@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <changeSet id="create-cdn-data-table" author="elmurod">
+        <sql>
+            CREATE TABLE IF NOT EXISTS "file".cdn_data
+            (
+                id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                user_id            UUID,
+                content_length     BIGINT,
+                ext                TEXT,
+                folder             TEXT,
+                content_url        TEXT,
+                created_date       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE INDEX IF NOT EXISTS file_idx_cdn_data_user ON "file".cdn_data (user_id);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

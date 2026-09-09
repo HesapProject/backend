@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- To'lov/kechiktirish so'rovlarida currency bo'sh — shartnomadan backfill. -->
+    <changeSet id="20260718-10-payment-request-currency-backfill" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            UPDATE document.payment_requests r SET currency = c.currency
+            FROM document.contracts c WHERE r.contract_id = c.id AND r.currency IS NULL;
+            UPDATE document.delay_requests r SET currency = c.currency
+            FROM document.contracts c WHERE r.contract_id = c.id AND r.currency IS NULL;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

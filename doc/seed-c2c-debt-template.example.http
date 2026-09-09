@@ -1,0 +1,156 @@
+### C2C QARZ SHARTNOMASI — example (seed-c2c-debt-template.sql dan keyin)
+###
+### values[].keyName yangi kod bilan mos:
+###   address        ← OneIdPassportResponse.address yoki "Toshkent shahri"
+###   createdDate    ← DocumentEntity.createdDate (formatlangan matn)
+###   sellerFullName ← OneIdPassportResponse.fullName
+###   buyerFullName  ← OneIdPassportResponse.fullName
+###   price          ← DocumentEntity.price (formatlangan, masalan "5 000 000")
+###   currency       ← DocumentEntity.currency (UZS|USD|RUB yoki "so'm")
+###   priceWords     ← summa so'z bilan
+###   sellerDocument ← UserResponse.document
+###   sellerPinfl    ← UserResponse.pinfl
+###   sellerPhone    ← UserResponse.phone / seller.phone
+###   buyerDocument  ← UserResponse.document
+###   buyerPinfl     ← UserResponse.pinfl
+###   buyerPhone     ← UserResponse.phone / buyer.phone
+###
+### Avtomatik (values kerak emas):
+###   number              ← request.number / DocumentEntity.number
+###   paymentScheduleList ← request.payments
+
+@host = http://localhost:8005
+@token = <YOUR_ACCESS_TOKEN>
+@templateId = a1000001-0001-4001-8001-000000000001
+@sellerId = <SELLER_USER_UUID>
+@buyerId = <BUYER_USER_UUID>
+
+### 1) Shablonni ko'rish
+GET {{host}}/api/document/v1/template/{{templateId}}
+Authorization: Bearer {{token}}
+
+### 2) Shablon maydonlarini ko'rish
+GET {{host}}/api/document/v1/template/field/{{templateId}}
+Authorization: Bearer {{token}}
+
+### 3) C2C hujjat yaratish (qarz shartnomasi)
+POST {{host}}/api/document/v1/c2c
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "sellerId": "{{sellerId}}",
+  "buyerId": "{{buyerId}}",
+  "templateId": "{{templateId}}",
+  "price": 5000000,
+  "currency": "UZS",
+  "initialPayment": 0,
+  "deliveryAt": null,
+  "number": "QARZ-0001",
+  "witnessIds": [],
+  "values": [
+    {
+      "keyName": "address",
+      "value": "Toshkent shahri",
+      "templateId": "{{templateId}}",
+      "templateFieldId": "a1000002-0001-4001-8001-000000000001"
+    },
+    {
+      "keyName": "createdDate",
+      "value": "2026 yil 30 may",
+      "templateId": "{{templateId}}",
+      "templateFieldId": "a1000002-0001-4001-8001-000000000002"
+    },
+    {
+      "keyName": "sellerFullName",
+      "value": "YIGITALIYEV FERUZ RA'UFJON O'G'LI",
+      "templateId": "{{templateId}}",
+      "templateFieldId": "a1000002-0001-4001-8001-000000000003"
+    },
+    {
+      "keyName": "buyerFullName",
+      "value": "HAYITOVA SHOHIDA ERKIN QIZI",
+      "templateId": "{{templateId}}",
+      "templateFieldId": "a1000002-0001-4001-8001-000000000004"
+    },
+    {
+      "keyName": "price",
+      "value": "5 000 000",
+      "templateId": "{{templateId}}",
+      "templateFieldId": "a1000002-0001-4001-8001-000000000005"
+    },
+    {
+      "keyName": "currency",
+      "value": "UZS",
+      "templateId": "{{templateId}}",
+      "templateFieldId": "a1000002-0001-4001-8001-000000000006"
+    },
+    {
+      "keyName": "priceWords",
+      "value": "besh million so'm",
+      "templateId": "{{templateId}}",
+      "templateFieldId": "a1000002-0001-4001-8001-000000000007"
+    },
+    {
+      "keyName": "sellerDocument",
+      "value": "AD7770395",
+      "templateId": "{{templateId}}",
+      "templateFieldId": "a1000002-0001-4001-8001-000000000008"
+    },
+    {
+      "keyName": "sellerPinfl",
+      "value": "32803926930029",
+      "templateId": "{{templateId}}",
+      "templateFieldId": "a1000002-0001-4001-8001-000000000009"
+    },
+    {
+      "keyName": "sellerPhone",
+      "value": "+998777988046",
+      "templateId": "{{templateId}}",
+      "templateFieldId": "a1000002-0001-4001-8001-000000000010"
+    },
+    {
+      "keyName": "buyerDocument",
+      "value": "AB7708596",
+      "templateId": "{{templateId}}",
+      "templateFieldId": "a1000002-0001-4001-8001-000000000011"
+    },
+    {
+      "keyName": "buyerPinfl",
+      "value": "42010921811764",
+      "templateId": "{{templateId}}",
+      "templateFieldId": "a1000002-0001-4001-8001-000000000012"
+    },
+    {
+      "keyName": "buyerPhone",
+      "value": "+998919016213",
+      "templateId": "{{templateId}}",
+      "templateFieldId": "a1000002-0001-4001-8001-000000000013"
+    }
+  ],
+  "payments": [
+    {
+      "amount": 2500000,
+      "paymentDate": "2026-06-30T00:00:00Z"
+    },
+    {
+      "amount": 2500000,
+      "paymentDate": "2026-07-30T00:00:00Z"
+    }
+  ],
+  "products": []
+}
+
+### 4) PDF generatsiya (hujjat yaratilgach docId ni qo'ying)
+@docId = <DOCUMENT_UUID>
+GET {{host}}/api/document/v1/generate/{{docId}}
+Authorization: Bearer {{token}}
+
+### 5) Talabnoma yaratish (NOTICE shablon avtomatik topiladi)
+POST {{host}}/api/document/v1/notices
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "documentId": "{{docId}}"
+}

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Eski "user".admin jadvali olib tashlanadi. Admin'lar allaqachon user.user'ga
+         (type=ADMIN|SUPER_ADMIN, login/password) ko'chirilgan — login UserEntity orqali ishlaydi. -->
+    <changeSet id="20260618-70-drop-admin-table" author="qodiriy">
+        <preConditions onFail="MARK_RAN">
+            <tableExists schemaName="user" tableName="admin"/>
+        </preConditions>
+        <sql>
+            DROP TABLE IF EXISTS "user".admin CASCADE;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

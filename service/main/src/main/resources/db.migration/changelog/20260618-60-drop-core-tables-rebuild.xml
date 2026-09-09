@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+    <!-- Loyiha qayta qurilmoqda: device/company/user_company/balance jadvallari DROP. -->
+    <changeSet id="20260618-60-drop-core-tables-rebuild" author="qodiriy">
+        <sql>
+            DROP TABLE IF EXISTS "user".user_company CASCADE;
+            DROP TABLE IF EXISTS "user".balance CASCADE;
+            DROP TABLE IF EXISTS "user".company CASCADE;
+            DROP TABLE IF EXISTS "user".device CASCADE;
+        </sql>
+    </changeSet>
+</databaseChangeLog>

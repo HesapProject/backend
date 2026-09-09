@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <changeSet id="20260603-00-create-sms-invite-template-table" author="qodiriy">
+        <sql>
+            CREATE TABLE IF NOT EXISTS integration.sms_invite_template (
+                id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                language           TEXT NOT NULL UNIQUE,
+                text               TEXT,
+                created_date       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260603-00-seed-sms-invite-template" author="qodiriy">
+        <sql>
+            -- Har til uchun bo'sh shablon qatori. Admin Eskiz sozlamalaridan matnni kiritadi.
+            INSERT INTO integration.sms_invite_template (language, text)
+            SELECT 'uz', ''
+            WHERE NOT EXISTS (SELECT 1 FROM integration.sms_invite_template WHERE language = 'uz');
+
+            INSERT INTO integration.sms_invite_template (language, text)
+            SELECT 'ru', ''
+            WHERE NOT EXISTS (SELECT 1 FROM integration.sms_invite_template WHERE language = 'ru');
+
+            INSERT INTO integration.sms_invite_template (language, text)
+            SELECT 'eng', ''
+            WHERE NOT EXISTS (SELECT 1 FROM integration.sms_invite_template WHERE language = 'eng');
+        </sql>
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- contract_timeline -> contract_log (rename); template_application_log to'liq drop.
+         ALTER/DROP IF EXISTS idempotent. -->
+    <changeSet id="20260621-00-rename-timeline-drop-template-app-log" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE IF EXISTS log.contract_timeline RENAME TO contract_log;
+            DROP TABLE IF EXISTS log.template_application_log;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

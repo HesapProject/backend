@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- legal_document jadvalini docs ga qayta nomlash (DocsController). -->
+    <changeSet id="20260618-00-rename-legal-document-to-docs" author="qodiriy">
+        <preConditions onFail="MARK_RAN">
+            <tableExists schemaName="user" tableName="legal_document"/>
+        </preConditions>
+        <sql>
+            ALTER TABLE "user".legal_document RENAME TO docs;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

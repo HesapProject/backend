@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- UserType enum'dan USER olib tashlandi (USER->CLIENT). Mavjud 'USER'
+         qatorlarni 'CLIENT' ga ko'chiramiz, aks holda R2DBC o'qishda enum
+         valueOf("USER") xato beradi. -->
+    <!-- Jadval nomi to'g'rilandi: "user".users (mavjud emas) -> "user"."user".
+         Prod'da eski (buggy) versiya allaqachon EXECUTED bo'lgani uchun validCheckSum ANY —
+         o'zgargan checksum deploy'da crash bermasin. Mavjud envlarda no-op (USER qator yo'q). -->
+    <changeSet id="20260617-01-migrate-usertype-user-to-client" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            UPDATE "user"."user" SET type = 'CLIENT' WHERE type = 'USER';
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

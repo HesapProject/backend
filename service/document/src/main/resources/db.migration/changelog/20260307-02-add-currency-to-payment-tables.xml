@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+  <changeSet id="20260307-02-add-currency-to-payment-tables" author="elmurod">
+    <sql>
+      ALTER TABLE "document".payment_schedule
+      ADD COLUMN IF NOT EXISTS currency VARCHAR(10) DEFAULT 'UZS';
+
+      ALTER TABLE "document".paid_schedule
+      ADD COLUMN IF NOT EXISTS currency VARCHAR(10) DEFAULT 'UZS';
+
+      ALTER TABLE "document".payment_schedule_request
+      ADD COLUMN IF NOT EXISTS currency VARCHAR(10) DEFAULT 'UZS';
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>

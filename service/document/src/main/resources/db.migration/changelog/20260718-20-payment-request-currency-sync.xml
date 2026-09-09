@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- So'rov valyutasi har doim shartnoma valyutasiga teng bo'lishi kerak.
+         Ustun default 'UZS' bilan yaratilgani uchun avvalgi NULL-backfill ish
+         bermagan — endi mos kelmaganlarning hammasi shartnomadan sinxronlanadi. -->
+    <changeSet id="20260718-20-payment-request-currency-sync" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            UPDATE document.payment_requests r SET currency = c.currency
+            FROM document.contracts c
+            WHERE r.contract_id = c.id AND r.currency IS DISTINCT FROM c.currency;
+            UPDATE document.delay_requests r SET currency = c.currency
+            FROM document.contracts c
+            WHERE r.contract_id = c.id AND r.currency IS DISTINCT FROM c.currency;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

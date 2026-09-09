@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Paketga per-tur scoring kvotasi: Hesap / KATM / To'lov skoringi soni.
+         Sarflash (consumption) keyingi bosqichda; hozircha model + ko'rsatish. -->
+    <changeSet id="20260703-10-packages-scoring-counts" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql splitStatements="false">
+            ALTER TABLE "user".packages ADD COLUMN IF NOT EXISTS scoring_hesap INTEGER DEFAULT 0;
+            ALTER TABLE "user".packages ADD COLUMN IF NOT EXISTS scoring_katm INTEGER DEFAULT 0;
+            ALTER TABLE "user".packages ADD COLUMN IF NOT EXISTS scoring_payment INTEGER DEFAULT 0;
+        </sql>
+    </changeSet>
+</databaseChangeLog>

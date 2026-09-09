@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+    <changeSet id="create-contract-timeline-table" author="qodiriy">
+        <sql>
+            CREATE TABLE IF NOT EXISTS "log".contract_timeline
+            (
+                id           UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                contract_id  UUID,
+                event_type   TEXT,
+                role         TEXT,
+                actor_in     TEXT,
+                amount       DOUBLE PRECISION,
+                currency     TEXT,
+                occurred_at  TIMESTAMP,
+                created_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE INDEX IF NOT EXISTS log_idx_contract_timeline_contract
+                ON "log".contract_timeline (contract_id);
+        </sql>
+    </changeSet>
+</databaseChangeLog>

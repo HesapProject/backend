@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- activity_log — har bir foydalanuvchi amali: activity (enum nomi) + data (JSON). -->
+    <changeSet id="20260622-00-create-activity-log-table" author="qodiriy">
+        <sql>
+            CREATE TABLE IF NOT EXISTS "log".activity_log
+            (
+                id UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                user_id UUID,
+                company_id UUID,
+                activity TEXT,
+                data JSON,
+                created_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE INDEX IF NOT EXISTS idx_activity_log_user_id ON "log".activity_log (user_id);
+            CREATE INDEX IF NOT EXISTS idx_activity_log_activity ON "log".activity_log (activity);
+            CREATE INDEX IF NOT EXISTS idx_activity_log_created ON "log".activity_log (created_date);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Eski bazadan ko'chirilgan paketlar `type='BASIC'` bilan kelgan
+         (scripts/migration/03-perm-pkg.sql), lekin TariffType enum'da BASIC yo'q
+         (B2B/C2C/B2C/CONTRACT) -> GET /main/v1/packages 400 berardi.
+         BASIC shartnoma paketlari edi -> CONTRACT. UPDATE idempotent. -->
+    <changeSet id="20260827-10-fix-basic-tariff-type" author="qodiriy">
+        <preConditions onFail="MARK_RAN">
+            <tableExists schemaName="user" tableName="packages"/>
+        </preConditions>
+        <sql>
+            UPDATE "user".packages SET type = 'CONTRACT' WHERE type = 'BASIC';
+        </sql>
+    </changeSet>
+</databaseChangeLog>

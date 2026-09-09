@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Hesap Score (Faza 1) — foydalanuvchining to'lov xulq-atvoriga asoslangan
+         ishonchlilik ko'rsatkichi (0..1000, A–F band). PINFL/STIR (user_in) bo'yicha
+         saqlanadi — user o'chsa/qayta ro'yxatdan o'tsa ham barqaror. Hisob HesapScoreService
+         (S1–S5, ichki) tomonidan yoziladi; JSON maydonlar (sub_scores/inputs_snapshot/
+         reason_codes) MVP uchun TEXT (JSONB emas — driver binding tuzog'idan qochish). -->
+    <changeSet id="20260705-10-hesap-score" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql splitStatements="false">
+            CREATE TABLE IF NOT EXISTS "user".hesap_score (
+                id                    UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                user_in               TEXT NOT NULL,        -- PINFL/STIR (barqaror kalit)
+                score                 INT,                  -- 0..1000
+                band                  TEXT,                 -- A+/A/B/C/D/F | INSUFFICIENT_HISTORY
+                confidence            NUMERIC,              -- coverage'dan (0..1)
+                coverage              NUMERIC,              -- mavjud sub-skorlar og'irlik ulushi
+                insufficient_history  BOOLEAN NOT NULL DEFAULT false,
+                cold_start            BOOLEAN NOT NULL DEFAULT false,
+                sub_scores            TEXT,                 -- {S1..S5, og'irliklar} JSON
+                inputs_snapshot       TEXT,                 -- xom counterlar JSON (explainability + ML)
+                reason_codes          TEXT,                 -- barqaror driver enum'lar JSON massiv
+                computed_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at            TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS uq_hesap_score_user_in ON "user".hesap_score (user_in);
+            CREATE INDEX IF NOT EXISTS idx_hesap_score_band ON "user".hesap_score (band);
+        </sql>
+    </changeSet>
+</databaseChangeLog>

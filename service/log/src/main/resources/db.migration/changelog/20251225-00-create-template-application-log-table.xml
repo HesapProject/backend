@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+  <changeSet id="create-template-application-log-table" author="elmurod">
+    <sql>
+        CREATE TABLE IF NOT EXISTS "log".template_application_log
+        (
+            id
+            UUID
+            PRIMARY
+            KEY
+            DEFAULT
+            uuid_generate_v4
+        (
+        ) NOT NULL,
+            application_id UUID,
+            company_id UUID,
+            old_status TEXT,
+            new_status TEXT,
+            updated_by UUID,
+            first_name TEXT,
+            last_name TEXT,
+            timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+    </sql>
+  </changeSet>
+</databaseChangeLog>

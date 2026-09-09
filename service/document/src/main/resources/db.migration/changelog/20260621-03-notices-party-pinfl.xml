@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- notices: document_id→contract_id; buyer_id→buyer_in (PINFL), seller_id→seller_in (PINFL).
+         buyer_in/seller_in contracts'dan backfill, so'ng eski UUID ustunlar drop. -->
+    <changeSet id="20260621-03-notices-party-pinfl" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE document.notices RENAME COLUMN document_id TO contract_id;
+            ALTER TABLE document.notices ADD COLUMN IF NOT EXISTS buyer_in TEXT;
+            ALTER TABLE document.notices ADD COLUMN IF NOT EXISTS seller_in TEXT;
+
+            UPDATE document.notices n
+               SET buyer_in = d.buyer_in, seller_in = d.seller_in
+              FROM document.contracts d
+             WHERE d.id = n.contract_id;
+
+            ALTER TABLE document.notices DROP COLUMN IF EXISTS buyer_id;
+            ALTER TABLE document.notices DROP COLUMN IF EXISTS seller_id;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

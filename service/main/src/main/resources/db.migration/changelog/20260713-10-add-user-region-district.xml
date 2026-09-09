@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- OneID'dan keladigan viloyat (p_region) va tuman (p_district) —
+         profil manzilini shahar/tuman bilan ko'rsatish uchun /me'da qaytariladi. -->
+    <changeSet id="20260713-10-add-user-region-district" author="qodiriy">
+        <sql>
+            ALTER TABLE "user".user
+                ADD COLUMN IF NOT EXISTS region    TEXT,
+                ADD COLUMN IF NOT EXISTS district  TEXT;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

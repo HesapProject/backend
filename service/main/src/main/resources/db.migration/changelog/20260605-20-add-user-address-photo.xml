@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- OneID manzili (address) va rasmi (photo, base64) user jadvalida saqlanadi,
+         /me javobida qaytariladi (alohida /me/passport so'rovi kerak emas). -->
+    <changeSet id="20260605-20-add-user-address-photo" author="system">
+        <sql>
+            ALTER TABLE "user".user
+                ADD COLUMN IF NOT EXISTS address TEXT,
+                ADD COLUMN IF NOT EXISTS photo TEXT;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

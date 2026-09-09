@@ -1,0 +1,86 @@
+server:
+  port: 8003
+  forward-headers-strategy: framework
+  servlet:
+    contextPath: /
+  error:
+    whitelabel:
+      enabled: false
+
+spring:
+  application:
+    name: log-service
+
+  webflux:
+    base-path: /
+  data:
+    r2dbc:
+      repositories:
+        enabled: true
+
+  r2dbc:
+    url: r2dbc:postgresql://${POSTGRES_SERVER:localhost:5435}/hesap
+#    url: r2dbc:postgresql://${POSTGRES_SERVER:localhost:5435}/hesap
+    username: ${POSTGRES_USERNAME:postgres}
+    password: ${POSTGRES_PASSWORD:}
+    properties:
+      schema: log
+
+  liquibase:
+    url: jdbc:postgresql://${POSTGRES_SERVER:localhost:5435}/hesap
+#    url: jdbc:postgresql://${POSTGRES_SERVER:localhost:5435}/hesap
+    user: ${POSTGRES_USERNAME:postgres}
+    password: ${POSTGRES_PASSWORD:}
+    change-log: classpath:db.migration/db.changelog-master.yaml
+    enabled: true
+    liquibase-schema: log
+
+  rabbitmq:
+    host: ${RABBIT_HOST:localhost}
+    port: ${RABBIT_PORT:5672}
+    username: ${RABBIT_USERNAME:CHANGE_ME}
+    password: ${RABBIT_PASSWORD:}
+    exchange: exchange.direct.hesap
+
+springdoc:
+  api-docs:
+    path: /log/v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+info:
+  app:
+    name: ${spring.application.name}
+    version: "@application.version@"
+    description: "@application.description@"
+
+#management:
+#  server:
+#    port: 8081
+#  health:
+#    ldap:
+#      enabled: off
+#  endpoints:
+#    web:
+#      exposure:
+#        include: "*"
+#    enabled-by-default: false
+#  endpoint:
+#    info:
+#      enabled: true
+#    env:
+#      enabled: true
+#    health:
+#      probes:
+#        enabled: true
+#      group:
+#        readiness:
+#          include: "readinessuser"
+#        liveness:
+#          include: "livenessuser"
+#      enabled: true
+#      show-details: always
+
+application:
+  main-service:
+    base-url: ${MAIN_SERVICE:http://95.182.117.234:8001}

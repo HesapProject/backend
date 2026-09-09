@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Mavjud Payme credential'lari billing.payment'dan ko'chiriladi.
+         billing.payment yo'q (yangi DB) bo'lsa skip. -->
+    <changeSet id="20260531-02-copy-payme-setting-from-billing" author="claude">
+        <preConditions onFail="MARK_RAN">
+            <tableExists schemaName="billing" tableName="payment"/>
+        </preConditions>
+        <sql>
+            INSERT INTO integration.payme_setting (merchant_id, secret)
+            SELECT payme_merchant_id, payme_secret
+            FROM billing.payment
+            WHERE deleted = false AND payme_merchant_id IS NOT NULL
+            LIMIT 1;
+        </sql>
+    </changeSet>
+</databaseChangeLog>

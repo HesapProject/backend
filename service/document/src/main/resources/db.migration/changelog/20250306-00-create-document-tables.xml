@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+    <changeSet id="create-tables" author="isoqhakimov (generated)">
+        <sql>
+
+            CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+            CREATE SCHEMA IF NOT EXISTS "document";
+
+            CREATE TABLE IF NOT EXISTS "document".template(
+                id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                company_id         UUID,
+                name_uz            TEXT,
+                name_ru            TEXT,
+                name_en            TEXT,
+                template_data      TEXT,
+                status             TEXT,
+                amount             DOUBLE PRECISION,
+                deleted            BOOLEAN DEFAULT FALSE,
+                created_date       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS "document".template_field(
+                id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                template_id        UUID,
+                key_name           TEXT,
+                name_uz            TEXT,
+                name_ru            TEXT,
+                name_en            TEXT,
+                type               TEXT,
+                position           TEXT,
+                parent_key         TEXT,
+                deleted            BOOLEAN DEFAULT FALSE,
+                created_date       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+
+        </sql>
+    </changeSet>
+</databaseChangeLog>

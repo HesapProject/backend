@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- To'lovlar jurnali — Payme/Click (integration) va Control (admin) to'lovlari yoziladi. -->
+    <changeSet id="20260617-00-create-payments-table" author="qodiriy">
+        <sql>
+            CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+            CREATE TABLE IF NOT EXISTS "user".payments (
+                id             UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                amount         DOUBLE PRECISION,
+                user_id        UUID,
+                payment_method TEXT,
+                created_by     UUID,
+                updated_by     UUID,
+                created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE INDEX IF NOT EXISTS user_idx_payments_user ON "user".payments(user_id);
+            CREATE INDEX IF NOT EXISTS user_idx_payments_method ON "user".payments(payment_method);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

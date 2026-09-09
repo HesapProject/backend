@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- To'lov so'roviga izoh (note) va chek rasmi (image) biriktirish. -->
+    <changeSet id="20260622-10-payment-request-note-image" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE document.payment_requests ADD COLUMN IF NOT EXISTS note  TEXT;
+            ALTER TABLE document.payment_requests ADD COLUMN IF NOT EXISTS image TEXT;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

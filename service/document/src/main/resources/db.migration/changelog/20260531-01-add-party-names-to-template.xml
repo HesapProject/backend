@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Shartnoma taraflari nomi (3 tilda): firstName = birinchi taraf
+         (masalan Oluvchi/Qarzdor), secondName = ikkinchi taraf (Sotuvchi/Haqdor).
+         Business taraf tanlash tab'i shulardan label oladi. -->
+    <changeSet id="20260531-01-add-party-names-to-template" author="qodiriy">
+        <sql>
+            ALTER TABLE document.template ADD COLUMN first_name_uz  VARCHAR(255);
+            ALTER TABLE document.template ADD COLUMN first_name_ru  VARCHAR(255);
+            ALTER TABLE document.template ADD COLUMN first_name_en  VARCHAR(255);
+            ALTER TABLE document.template ADD COLUMN second_name_uz VARCHAR(255);
+            ALTER TABLE document.template ADD COLUMN second_name_ru VARCHAR(255);
+            ALTER TABLE document.template ADD COLUMN second_name_en VARCHAR(255);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Xodim (admin) qo'shishda PINFL — Control xodim formasidagi yangi maydon. -->
+    <changeSet id="20260614-01-add-admin-pinfl" author="qodiriy">
+        <sql>
+            ALTER TABLE "user".admin ADD COLUMN IF NOT EXISTS pinfl VARCHAR(14);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Jadvallarni "contract_*" nomiga ko'chirish (faqat jadval nomi). ALTER TABLE IF EXISTS
+         idempotent (PG14+). DO $$ ishlatilmaydi — Liquibase splitStatements dollar-quote'ni buzadi. -->
+    <changeSet id="20260617-50-rename-document-tables-to-contract" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE IF EXISTS document.document_value RENAME TO contract_value;
+            ALTER TABLE IF EXISTS document.document_witness RENAME TO contract_witness;
+            ALTER TABLE IF EXISTS document.payment_schedule RENAME TO contract_payment;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

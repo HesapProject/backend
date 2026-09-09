@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- payment_reminder_log — PaymentCronService (document) har kunlik cron
+         run audit yozuvi: startedAt, completedAt, topilgan/success/failed son'lari,
+         umumiy xato xabari. Control Monitoring UI shu jadvaldan o'qiydi. -->
+    <changeSet id="20260703-00-create-payment-reminder-log-table" author="qodiriy">
+        <sql>
+            CREATE TABLE IF NOT EXISTS "log".payment_reminder_log
+            (
+                id                UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                started_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                completed_at      TIMESTAMP,
+                total_candidates  INT,
+                sent_success      INT DEFAULT 0,
+                sent_failed       INT DEFAULT 0,
+                error_message     TEXT
+            );
+            CREATE INDEX IF NOT EXISTS idx_payment_reminder_log_started_at
+                ON "log".payment_reminder_log (started_at DESC);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

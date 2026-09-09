@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <changeSet id="20260228-18-create-admin-table" author="qodiriy">
+        <sql>
+            CREATE TABLE IF NOT EXISTS "user".admin (
+                id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                login               VARCHAR(64) NOT NULL UNIQUE,
+                password            TEXT NOT NULL,
+                role                VARCHAR(32) NOT NULL,
+                full_name           VARCHAR(255),
+
+                is_active           BOOLEAN DEFAULT TRUE,
+                deleted             BOOLEAN DEFAULT FALSE,
+                created_date        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                version             BIGINT
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_admin_login ON "user".admin (login);
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260228-18-seed-default-admin" author="qodiriy">
+        <sql>
+            -- Default admin (login: admin). Parol hash'i ataylab qo'yilmagan —
+            -- deploy'dan keyin BCrypt hash bilan to'ldiring.
+            INSERT INTO "user".admin (login, password, role, full_name)
+            VALUES (
+                'admin',
+                'CHANGE_ME',
+                'SUPER_ADMIN',
+                'System Administrator'
+            ) ON CONFLICT (login) DO NOTHING;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

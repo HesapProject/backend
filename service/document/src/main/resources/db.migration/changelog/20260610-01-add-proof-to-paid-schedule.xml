@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- To'lov cheki rasm URL (xaridor yuklagan proof). -->
+    <changeSet id="20260610-01-add-proof-to-paid-schedule" author="qodiriy">
+        <sql>
+            ALTER TABLE document.paid_schedule ADD COLUMN proof TEXT;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

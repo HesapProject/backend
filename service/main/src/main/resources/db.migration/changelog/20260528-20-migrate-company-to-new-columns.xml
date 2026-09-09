@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Mavjud COMPANY userlarni eski ustunlardan yangilariga ko'chirish.
+         Eskicha: pinfl=TIN, first_name=legalName (hacky reuse).
+         Endi: tin=TIN, legal_name=legalName. is_verified=true (hammasi OneID orqali kelgan). -->
+    <changeSet id="20260528-20-migrate-company-to-new-columns" author="system">
+        <sql>
+            UPDATE "user".user
+            SET tin          = COALESCE(tin, pinfl),
+                legal_name   = COALESCE(legal_name, first_name),
+                is_verified  = TRUE
+            WHERE type = 'COMPANY';
+
+            -- CLIENT userlar ham OneID orqali kelgan — tasdiqlangan deb belgilash.
+            UPDATE "user".user
+            SET is_verified = TRUE
+            WHERE type = 'CLIENT';
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

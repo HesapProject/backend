@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Xaridlar jurnali — tarif/paket sotib olinganda yoziladi. -->
+    <changeSet id="20260617-10-create-purchases-table" author="qodiriy">
+        <sql>
+            CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+            CREATE TABLE IF NOT EXISTS "user".purchases (
+                id             UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                amount         DOUBLE PRECISION,
+                user_id        UUID,
+                payment_method TEXT,
+                unit_type      TEXT,
+                unit_id        UUID,
+                created_by     UUID,
+                updated_by     UUID,
+                created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE INDEX IF NOT EXISTS user_idx_purchases_user ON "user".purchases(user_id);
+            CREATE INDEX IF NOT EXISTS user_idx_purchases_unit ON "user".purchases(unit_type, unit_id);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd">
+
+    <!-- amoCRM integratsiyasi (eski crm-app amo.tokens_table / amo.contacts o'rniga):
+         OAuth token lifecycle + Hesap user ↔ amoCRM contact bog'lami. -->
+    <changeSet id="20260902-00-create-amo-tables" author="qodiriy">
+        <sql>
+            CREATE TABLE IF NOT EXISTS integration.amo_token (
+                id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                client_id     TEXT,
+                client_secret TEXT,
+                redirect_uri  TEXT,
+                access_token  TEXT,
+                refresh_token TEXT,
+                server_time   BIGINT,
+                expires_in    BIGINT,
+                token_type    TEXT,
+                created_date  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS integration.amo_contact (
+                id             UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                amo_contact_id BIGINT,
+                name           TEXT,
+                first_name     TEXT,
+                last_name      TEXT,
+                phone          TEXT,
+                hesap_user_id  UUID,
+                created_date   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_amo_contact_hesap_user_id
+                ON integration.amo_contact (hesap_user_id);
+            CREATE INDEX IF NOT EXISTS idx_amo_token_created_date
+                ON integration.amo_token (created_date DESC);
+        </sql>
+    </changeSet>
+</databaseChangeLog>

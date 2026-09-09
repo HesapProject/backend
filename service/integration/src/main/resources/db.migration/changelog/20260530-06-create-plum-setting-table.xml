@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <changeSet id="20260530-06-create-plum-setting-table" author="qodiriy">
+        <sql>
+            CREATE TABLE IF NOT EXISTS integration.plum_setting (
+                id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                base_url           TEXT NOT NULL,
+                login              TEXT NOT NULL,
+                password           TEXT,
+                created_date       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+        </sql>
+    </changeSet>
+
+    <!-- Mavjud Plum credential'lari integration_credential'dan ko'chiriladi.
+         Yangi DB'larda preCondition orqali skip. -->
+    <changeSet id="20260530-06-copy-plum-from-integration-credential" author="qodiriy">
+        <preConditions onFail="MARK_RAN">
+            <tableExists schemaName="integration" tableName="integration_credential"/>
+        </preConditions>
+        <sql>
+            INSERT INTO integration.plum_setting (id, base_url, login, password, created_date, last_modified_date)
+            SELECT id,
+                   COALESCE(base_url, 'https://pay.myuzcard.uz/api'),
+                   login,
+                   password,
+                   created_date,
+                   last_modified_date
+            FROM integration.integration_credential
+            WHERE provider = 'PLUM' AND deleted = false
+            ON CONFLICT (id) DO NOTHING;
+        </sql>
+    </changeSet>
+</databaseChangeLog>

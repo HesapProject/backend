@@ -1,0 +1,58 @@
+server:
+  port: 0
+
+spring:
+  application:
+    name: document-service-test
+
+  webflux:
+    base-path: /
+  data:
+    r2dbc:
+      repositories:
+        enabled: true
+
+  # postgres-test container (localhost:5433, db: test)
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5433/postgres
+    username: postgres
+    password: ${RABBIT_PASSWORD:}
+    properties:
+      schema: document
+
+  liquibase:
+    url: jdbc:postgresql://localhost:5433/postgres
+    user: postgres
+    password: ${RABBIT_PASSWORD:}
+    change-log: classpath:db.migration/db.changelog-master.yaml
+    enabled: true
+    liquibase-schema: document
+
+  # RabbitMQ — postgresda ishlatilmasin
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: CHANGE_ME
+    password: ${RABBIT_PASSWORD:}
+    exchange: exchange.direct.hesap
+
+  # Security — postgresda o'chirish
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ""
+
+springdoc:
+  api-docs:
+    path: /api/document/v3/api-docs
+
+application:
+  main-service:
+    base-url: http://localhost:19999
+  billing-service:
+    base-url: http://localhost:19999
+  notification-service:
+    base-url: http://localhost:19999
+  integration-service:
+    base-url: http://localhost:19999

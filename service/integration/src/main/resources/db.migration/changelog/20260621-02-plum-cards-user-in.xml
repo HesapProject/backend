@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- billing.plum_cards: user_id (UUID) → user_in (PINFL/STIR).
+         user_in "user"."user"'dan backfill, so'ng eski user_id drop. -->
+    <changeSet id="20260621-02-plum-cards-user-in" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE billing.plum_cards ADD COLUMN IF NOT EXISTS user_in TEXT;
+
+            UPDATE billing.plum_cards c
+               SET user_in = (SELECT COALESCE(u.pinfl, u.tin) FROM "user"."user" u WHERE u.id = c.user_id)
+             WHERE c.user_id IS NOT NULL;
+
+            ALTER TABLE billing.plum_cards DROP COLUMN IF EXISTS user_id;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

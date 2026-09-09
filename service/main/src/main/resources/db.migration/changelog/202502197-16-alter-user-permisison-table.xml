@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <changeSet id="20260228-15-create-one-id-user-table" author="elmurod">
+        <sql>
+            ALTER TABLE "user".permission_request
+                ADD COLUMN user_info BOOLEAN default false;
+
+            ALTER TABLE "user".user_permission
+                ADD COLUMN user_info BOOLEAN default false;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

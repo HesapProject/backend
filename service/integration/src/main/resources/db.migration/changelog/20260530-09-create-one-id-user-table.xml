@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <changeSet id="20260530-09-create-one-id-user" author="qodiriy">
+        <sql>
+            CREATE TABLE IF NOT EXISTS integration.one_id_user (
+                user_id             UUID PRIMARY KEY,
+
+                pin                 VARCHAR(14),
+                login               VARCHAR(255),
+                one_id_user_id      BIGINT,
+
+                surname_latin       VARCHAR(255),
+                name_latin          VARCHAR(255),
+                patronymic_latin    VARCHAR(255),
+
+                surname_cyr         VARCHAR(255),
+                name_cyr            VARCHAR(255),
+                patronymic_cyr      VARCHAR(255),
+
+                surname_en          VARCHAR(255),
+                name_en             VARCHAR(255),
+
+                full_name           VARCHAR(500),
+
+                document            VARCHAR(20),
+                doc_num             VARCHAR(50),
+                issue_place         VARCHAR(500),
+                issue_place_id      VARCHAR(50),
+                issue_date          DATE,
+                end_date            DATE,
+
+                birth_date          VARCHAR(20),
+                birth_place         VARCHAR(500),
+                birth_place_id      VARCHAR(50),
+                birth_country       VARCHAR(255),
+                birth_country_id    VARCHAR(50),
+
+                sex                 VARCHAR(10),
+                nationality         VARCHAR(255),
+                nationality_id      VARCHAR(50),
+                citizenship         VARCHAR(255),
+                citizenship_id      VARCHAR(50),
+                live_status         VARCHAR(50),
+
+                email               VARCHAR(255),
+                phone               VARCHAR(20),
+
+                cadastre            VARCHAR(100),
+                country_id          VARCHAR(50),
+                country             VARCHAR(255),
+                region_id           VARCHAR(50),
+                region              VARCHAR(255),
+                district_id         VARCHAR(50),
+                district            VARCHAR(255),
+                address             VARCHAR(1000),
+
+                photo               TEXT,
+                auth_method         VARCHAR(50),
+                valid               VARCHAR(10),
+                lang                VARCHAR(10),
+                is_active           BOOLEAN,
+                is_legal            BOOLEAN,
+
+                created_date        TIMESTAMPTZ DEFAULT now(),
+                last_modified_date  TIMESTAMPTZ DEFAULT now()
+            );
+        </sql>
+    </changeSet>
+
+    <!-- Eski user.one_id_user'dan ma'lumotlarni nusxalash. -->
+    <changeSet id="20260530-09-copy-one-id-user-data" author="qodiriy">
+        <preConditions onFail="MARK_RAN">
+            <tableExists schemaName="user" tableName="one_id_user"/>
+        </preConditions>
+        <sql>
+            INSERT INTO integration.one_id_user
+            SELECT * FROM "user".one_id_user
+            ON CONFLICT (user_id) DO NOTHING;
+        </sql>
+    </changeSet>
+</databaseChangeLog>

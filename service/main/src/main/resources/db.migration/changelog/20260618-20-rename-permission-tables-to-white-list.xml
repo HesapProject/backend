@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- White-list (eski friends/permission) jadvallarini white_list_* ga qayta nomlash.
+         white_list (WhiteListController CRUD) jadvaliga tegilmaydi. -->
+    <changeSet id="20260618-20-rename-permission-request-to-white-list-request" author="qodiriy">
+        <preConditions onFail="MARK_RAN">
+            <tableExists schemaName="user" tableName="permission_request"/>
+        </preConditions>
+        <sql>ALTER TABLE "user".permission_request RENAME TO white_list_request;</sql>
+    </changeSet>
+
+    <changeSet id="20260618-20-rename-user-permission-to-white-list-permission" author="qodiriy">
+        <preConditions onFail="MARK_RAN">
+            <tableExists schemaName="user" tableName="user_permission"/>
+        </preConditions>
+        <sql>ALTER TABLE "user".user_permission RENAME TO white_list_permission;</sql>
+    </changeSet>
+
+    <changeSet id="20260618-20-rename-permission-to-white-list-type" author="qodiriy">
+        <preConditions onFail="MARK_RAN">
+            <tableExists schemaName="user" tableName="permission"/>
+        </preConditions>
+        <sql>ALTER TABLE "user".permission RENAME TO white_list_type;</sql>
+    </changeSet>
+
+</databaseChangeLog>

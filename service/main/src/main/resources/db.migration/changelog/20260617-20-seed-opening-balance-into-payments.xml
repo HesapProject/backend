@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Balans endi payments−purchases(BALANCE) dan hisoblanadi. Mavjud SUMMA pul
+         balanslarini payments'ga "boshlang'ich" (opening, method=CONTROL) kiruvchi yozuv
+         qilib ko'chiramiz — aks holda hisoblangan balans ~0 bo'lib qolardi. Bir marta. -->
+    <changeSet id="20260617-20-seed-opening-balance-into-payments" author="qodiriy">
+        <sql>
+            INSERT INTO "user".payments (user_id, amount, payment_method, created_at, updated_at)
+            SELECT unique_id, balance, 'CONTROL', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+            FROM "user".balance
+            WHERE balance_type = 'SUMMA'
+              AND COALESCE(deleted, FALSE) = FALSE
+              AND balance IS NOT NULL
+              AND balance &lt;&gt; 0;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

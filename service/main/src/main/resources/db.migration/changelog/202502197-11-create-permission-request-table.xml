@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <changeSet id="20260214-00-create-user-permission-table" author="elmurod">
+        <sql>
+            CREATE TABLE "user".user_permission (
+               id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+               user_from_id        UUID NOT NULL,
+               user_to_id          UUID NOT NULL,
+               passport            BOOLEAN DEFAULT FALSE,
+               payability          BOOLEAN DEFAULT FALSE,
+               contract            BOOLEAN DEFAULT FALSE,
+               partner             BOOLEAN DEFAULT FALSE,
+               active              BOOLEAN DEFAULT TRUE,
+               deleted             BOOLEAN DEFAULT FALSE,
+               created_date        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+               last_modified_date  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE INDEX user_user_permission_user_from ON "user".user_permission(user_from_id);
+            CREATE INDEX user_user_permission_user_to ON "user".user_permission(user_to_id);
+            CREATE UNIQUE INDEX user_user_permission_unique ON "user".user_permission(user_from_id, user_to_id) WHERE deleted = false;
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260214-01-create-permission-request-table" author="elmurod">
+        <sql>
+            CREATE TABLE "user".permission_request (
+               id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+               user_from_id        UUID NOT NULL,
+               user_to_id          UUID NOT NULL,
+               passport            BOOLEAN DEFAULT FALSE,
+               payability          BOOLEAN DEFAULT FALSE,
+               contract            BOOLEAN DEFAULT FALSE,
+               partner             BOOLEAN DEFAULT FALSE,
+               status              VARCHAR(20) DEFAULT 'PENDING' NOT NULL,
+               deleted             BOOLEAN DEFAULT FALSE,
+               created_date        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+               last_modified_date  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE INDEX user_permission_request_user_from ON "user".permission_request(user_from_id);
+            CREATE INDEX user_permission_request_user_to ON "user".permission_request(user_to_id);
+            CREATE INDEX user_permission_request_status ON "user".permission_request(status);
+        </sql>
+    </changeSet>
+</databaseChangeLog>

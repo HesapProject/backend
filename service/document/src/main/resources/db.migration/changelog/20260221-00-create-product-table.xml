@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+  <changeSet id="create-template-application-table" author="elmurod">
+    <sql>
+
+        CREATE TABLE document.product
+        (
+            id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+            name_uz            TEXT,
+            name_ru            TEXT,
+            name_en            TEXT,
+            description        TEXT,
+            company_id         UUID                                        NOT NULL,
+            mxic               TEXT,
+            package_code       TEXT,
+            product_unit       TEXT,
+            package_id         UUID,
+            price              double precision,
+            image              TEXT,
+            barcode            TEXT,
+            deleted            BOOLEAN          DEFAULT FALSE              NOT NULL,
+            created_date       TIMESTAMP,
+            last_modified_date TIMESTAMP,
+            version            BIGINT           DEFAULT 0
+        );
+
+        CREATE TABLE document.contract_product
+        (
+            id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+            document_id        UUID                                        NOT NULL,
+            product_id         UUID                                        NOT NULL,
+            amount             double precision                            NOT NULL,
+            price              double precision                            NOT NULL,
+            name_uz            TEXT,
+            name_ru            TEXT,
+            name_en            TEXT,
+            description        TEXT,
+            company_id         UUID,
+            mxic               TEXT,
+            package_code       TEXT,
+            product_unit       TEXT,
+            package_id         UUID,
+            image              TEXT,
+            barcode            TEXT,
+            deleted            BOOLEAN          DEFAULT FALSE              NOT NULL,
+            created_date       TIMESTAMP,
+            last_modified_date TIMESTAMP,
+            version            BIGINT           DEFAULT 0
+        );
+
+    </sql>
+  </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Per-event notification sozlamalari `integration.template_notification` jadvaliga
+         ko'chgan; template'dagi eski umumiy fallback ustunlar olib tashlanadi.
+         Idempotent: ustun mavjud bo'lsa drop, yo'q bo'lsa o'tkazib yuboriladi. -->
+    <changeSet id="20260629-10-drop-template-notification-columns" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql splitStatements="false">
+            DO $$
+            BEGIN
+                IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='document' AND table_name='template' AND column_name='sms_notification_enabled') THEN
+                    ALTER TABLE document.template DROP COLUMN sms_notification_enabled;
+                END IF;
+                IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='document' AND table_name='template' AND column_name='sms_notification_text') THEN
+                    ALTER TABLE document.template DROP COLUMN sms_notification_text;
+                END IF;
+                IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='document' AND table_name='template' AND column_name='firebase_notification_enabled') THEN
+                    ALTER TABLE document.template DROP COLUMN firebase_notification_enabled;
+                END IF;
+                IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='document' AND table_name='template' AND column_name='firebase_notification_text') THEN
+                    ALTER TABLE document.template DROP COLUMN firebase_notification_text;
+                END IF;
+            END $$;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

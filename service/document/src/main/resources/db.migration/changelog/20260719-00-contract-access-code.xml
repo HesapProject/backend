@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Public shartnoma ko'rish uchun 4 xonali kirish kodi (contract.hesap.uz PIN).
+         Yaratishda generatsiya qilinadi; mavjudlarga tasodifiy 4 xonali backfill.
+         PDF kesh (pdf_generated_at*) tozalanadi — keyingi generatsiyada QR+kod chiqadi. -->
+    <changeSet id="20260719-00-contract-access-code" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE document.contracts ADD COLUMN IF NOT EXISTS access_code VARCHAR(8);
+
+            UPDATE document.contracts
+               SET access_code = lpad((floor(random() * 10000))::int::text, 4, '0')
+             WHERE access_code IS NULL;
+
+            UPDATE document.contracts
+               SET pdf_generated_at = NULL,
+                   pdf_generated_at_ru = NULL,
+                   pdf_generated_at_en = NULL;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

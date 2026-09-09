@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Asosiy "document" jadvalini "contracts"ga ko'chirish (faqat jadval nomi). FK'lar avtomatik
+         yangi nomга ergashadi. ALTER TABLE IF EXISTS idempotent. document_seq (sequence) tegilmaydi. -->
+    <changeSet id="20260620-00-rename-document-to-contracts" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE IF EXISTS document.document RENAME TO contracts;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

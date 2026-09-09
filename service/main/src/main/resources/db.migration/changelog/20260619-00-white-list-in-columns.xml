@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- white_list: foydalanuvchini UUID emas IN (PINFL/STIR) bo'yicha bog'lash.
+         Legacy ruxsatlar IN bo'yicha ko'chadi — user yangi DB'da bo'lmasa ham
+         saqlanadi (keyin OneID bilan kirsa IN bo'yicha mos keladi). -->
+    <changeSet id="20260619-00-white-list-in-columns" author="qodiriy">
+        <sql>
+            ALTER TABLE "user".white_list ADD COLUMN IF NOT EXISTS user_from_in TEXT;
+            ALTER TABLE "user".white_list ADD COLUMN IF NOT EXISTS user_to_in   TEXT;
+
+            -- mavjud qatorlarni UUID'dan IN'ga backfill (pinfl orqali)
+            UPDATE "user".white_list w SET user_from_in = uf.pinfl
+            FROM "user"."user" uf WHERE uf.id = w.user_from_id AND w.user_from_in IS NULL;
+            UPDATE "user".white_list w SET user_to_in = ut.pinfl
+            FROM "user"."user" ut WHERE ut.id = w.user_to_id AND w.user_to_in IS NULL;
+
+            ALTER TABLE "user".white_list DROP COLUMN IF EXISTS user_from_id;
+            ALTER TABLE "user".white_list DROP COLUMN IF EXISTS user_to_id;
+
+            CREATE INDEX IF NOT EXISTS idx_white_list_from_in ON "user".white_list (user_from_in) WHERE deleted = false;
+            CREATE INDEX IF NOT EXISTS idx_white_list_to_in   ON "user".white_list (user_to_in)   WHERE deleted = false;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

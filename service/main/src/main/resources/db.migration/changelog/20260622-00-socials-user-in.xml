@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- socials: user_id (UUID) → user_in (PINFL/STIR). user_in eski user_id'dan
+         "user"."user".pinfl/tin'dan backfill, so'ng user_id drop. -->
+    <changeSet id="20260622-00-socials-user-in" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE "user".socials ADD COLUMN IF NOT EXISTS user_in TEXT;
+
+            UPDATE "user".socials s
+               SET user_in = (SELECT COALESCE(u.pinfl, u.tin) FROM "user"."user" u WHERE u.id = s.user_id)
+             WHERE s.user_id IS NOT NULL;
+
+            ALTER TABLE "user".socials DROP COLUMN IF EXISTS user_id;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

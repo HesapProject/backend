@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- pdf_url/pdf_generated_at endi faqat uz PDF cache'i. contract_template.template_data
+         3 tilga bo'lingandan keyin (20260704-10), PDF cache ham tilga qarab alohida bo'lishi
+         kerak — aks holda ru/en so'ralganda cache umuman ishlamay, har safar qayta generatsiya
+         qilinaverardi. -->
+    <changeSet id="20260708-00-pdf-cache-per-lang" author="qodiriy" runOnChange="true">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE document.contracts ADD COLUMN IF NOT EXISTS pdf_url_ru TEXT;
+            ALTER TABLE document.contracts ADD COLUMN IF NOT EXISTS pdf_generated_at_ru TIMESTAMP;
+            ALTER TABLE document.contracts ADD COLUMN IF NOT EXISTS pdf_url_en TEXT;
+            ALTER TABLE document.contracts ADD COLUMN IF NOT EXISTS pdf_generated_at_en TIMESTAMP;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

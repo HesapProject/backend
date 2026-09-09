@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd">
+
+    <!-- AbleID (theable.tech) integratsiyasi: creds singleton + sessiya urinishlari. -->
+    <changeSet id="20260828-00-create-ableid-tables" author="qodiriy">
+        <sql>
+            CREATE TABLE IF NOT EXISTS integration.ableid_setting (
+                id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                base_url           TEXT NOT NULL,
+                project_id         TEXT NOT NULL,
+                secret             TEXT,
+                hook_url           TEXT,
+                created_date       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS integration.ableid_attempt (
+                id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                attempt_id         TEXT NOT NULL,
+                transaction_id     TEXT NOT NULL,
+                user_in            TEXT NOT NULL,
+                status             TEXT NOT NULL DEFAULT 'PENDING',
+                payload            TEXT,
+                created_date       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_ableid_attempt_attempt_id
+                ON integration.ableid_attempt (attempt_id);
+        </sql>
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,68 @@
+@baseUrl = http://localhost:8005/api/document/v1/c2c
+@docId = 123e4567-e89b-12d3-a456-426614174000
+@witnessId = 123e4567-e89b-12d3-a456-426614174001
+@buyerId = 123e4567-e89b-12d3-a456-426614174002
+@sellerId = 123e4567-e89b-12d3-a456-426614174003
+
+### Create C2C Document
+POST {{baseUrl}}
+Content-Type: application/json
+Authorization: Bearer
+
+{
+  "sellerId": "{{sellerId}}",
+  "buyerId": "{{buyerId}}",
+  "templateId": "123e4567-e89b-12d3-a456-426614174004",
+  "price": 1000.0,
+  "number": "DOC-001",
+  "witnessIds": [
+    "{{witnessId}}"
+  ],
+  "values": []
+}
+
+### Send Verification SMS (Witness)
+POST {{baseUrl}}/{{docId}}/send-verification-sms
+Content-Type: application/json
+Authorization: Bearer <witness_token>
+
+{
+  "action": "WITNESS_ACCEPT"
+}
+
+### Accept Witness (OTP)
+POST {{baseUrl}}/{{docId}}/witness/accept
+Content-Type: application/json
+Authorization: Bearer <witness_token>
+
+{
+  "code": "1234"
+}
+
+### Send Verification SMS (Party - Buyer)
+POST {{baseUrl}}/{{docId}}/send-verification-sms
+Content-Type: application/json
+Authorization: Bearer <buyer_token>
+
+{
+  "action": "PARTY_ACCEPT"
+}
+
+### Accept Party (Buyer)
+POST {{baseUrl}}/{{docId}}/party/accept
+Content-Type: application/json
+Authorization: Bearer <buyer_token>
+
+{
+  "code": "5678"
+}
+
+### Reject Witness
+POST {{baseUrl}}/{{docId}}/witness/reject
+Content-Type: application/json
+Authorization: Bearer <witness_token>
+
+### Reject/Cancel Party (Seller cancels)
+POST {{baseUrl}}/{{docId}}/party/reject
+Content-Type: application/json
+Authorization: Bearer <seller_token>

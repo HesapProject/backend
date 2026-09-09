@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Turanix partnyor-servis credential'lari — singleton (HMAC project_id + secret).
+         katm_setting bilan o'xshash struktura. -->
+    <changeSet id="20260601-00-create-turanix-setting-table" author="qodiriy">
+        <sql>
+            CREATE TABLE IF NOT EXISTS integration.turanix_setting (
+                id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                base_url           TEXT NOT NULL,
+                project_id         TEXT NOT NULL,
+                secret_key         TEXT,
+                created_date       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+        </sql>
+    </changeSet>
+
+    <!-- Turanix check-pass-msisdn tekshiruvlari tarixi. request/response — audit
+         uchun JSONB; har yozuv log servisga ham yuboriladi (TuranixLogReply). -->
+    <changeSet id="20260601-00-create-turanix-check-table" author="qodiriy">
+        <sql>
+            CREATE TABLE IF NOT EXISTS integration.turanix_check (
+                id              UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                user_id         UUID,
+                msisdn          TEXT,
+                pinfl           TEXT,
+                pass_ser        TEXT,
+                pass_num        TEXT,
+                status          TEXT,
+                result_code     INTEGER,
+                description     TEXT,
+                error_message   TEXT,
+                request         JSONB,
+                response        JSONB,
+                created_at      TIMESTAMP
+            );
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260601-00-create-turanix-check-indexes" author="qodiriy">
+        <sql>
+            CREATE INDEX IF NOT EXISTS idx_turanix_check_user_id ON integration.turanix_check (user_id);
+            CREATE INDEX IF NOT EXISTS idx_turanix_check_msisdn ON integration.turanix_check (msisdn);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

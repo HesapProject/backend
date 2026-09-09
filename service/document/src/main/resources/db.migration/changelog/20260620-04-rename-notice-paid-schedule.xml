@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- notice→notices, paid_schedule→payment_transactions (faqat jadval nomi). FK'lar ergashadi. -->
+    <changeSet id="20260620-04-rename-notice-paid-schedule" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE IF EXISTS document.notice RENAME TO notices;
+            ALTER TABLE IF EXISTS document.paid_schedule RENAME TO payment_transactions;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

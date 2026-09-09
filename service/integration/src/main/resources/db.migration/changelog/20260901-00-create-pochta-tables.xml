@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- hybrid.pochta.uz integratsiyasi — credential singleton (OAuth2 password grant). -->
+    <changeSet id="20260901-00-create-pochta-setting-table" author="qodiriy">
+        <sql>
+            CREATE TABLE IF NOT EXISTS integration.pochta_setting (
+                id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                base_url           TEXT NOT NULL,
+                username           TEXT,
+                password           TEXT,
+                created_date       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+        </sql>
+    </changeSet>
+
+    <!-- Pochta so'rovlari tarixi (monitoring log). -->
+    <changeSet id="20260901-00-create-pochta-log-table" author="qodiriy">
+        <sql>
+            CREATE TABLE IF NOT EXISTS integration.pochta_log (
+                id              UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+                action          TEXT,
+                status          TEXT,
+                mail_id         TEXT,
+                request         TEXT,
+                response        TEXT,
+                error_message   TEXT,
+                created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE INDEX IF NOT EXISTS idx_pochta_log_created ON integration.pochta_log (created_at DESC);
+        </sql>
+    </changeSet>
+</databaseChangeLog>

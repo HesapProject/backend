@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Promokod qayta loyihalandi: discount model → amount + type + audience + amal muddati.
+         from_date/to_date → valid_from/valid_to; discount_* ustunlar olib tashlandi. -->
+    <changeSet id="20260622-01-promo-redesign" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            ALTER TABLE "user".promo ADD COLUMN IF NOT EXISTS amount DOUBLE PRECISION;
+            ALTER TABLE "user".promo ADD COLUMN IF NOT EXISTS type TEXT;
+            ALTER TABLE "user".promo ADD COLUMN IF NOT EXISTS audience TEXT DEFAULT 'ALL';
+            ALTER TABLE "user".promo ADD COLUMN IF NOT EXISTS active BOOLEAN DEFAULT TRUE;
+
+            ALTER TABLE "user".promo RENAME COLUMN from_date TO valid_from;
+            ALTER TABLE "user".promo RENAME COLUMN to_date TO valid_to;
+
+            ALTER TABLE "user".promo DROP COLUMN IF EXISTS discount_type;
+            ALTER TABLE "user".promo DROP COLUMN IF EXISTS discount_value;
+            ALTER TABLE "user".promo DROP COLUMN IF EXISTS from_price;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

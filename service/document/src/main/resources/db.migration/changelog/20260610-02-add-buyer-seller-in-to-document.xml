@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Tarafning barqaror identifikatori (in = jismoniy PINFL yoki yuridik STIR).
+         User o'chsa/qayta ro'yxatdan o'tsa ham shartnoma-taraf bog'lanishi saqlanadi. -->
+    <changeSet id="20260610-02-add-buyer-seller-in" author="qodiriy">
+        <sql>
+            ALTER TABLE document.document ADD COLUMN IF NOT EXISTS buyer_in  TEXT;
+            ALTER TABLE document.document ADD COLUMN IF NOT EXISTS seller_in TEXT;
+            CREATE INDEX IF NOT EXISTS idx_document_buyer_in  ON document.document (buyer_in);
+            CREATE INDEX IF NOT EXISTS idx_document_seller_in ON document.document (seller_in);
+        </sql>
+    </changeSet>
+
+    <!-- Mavjud hujjatlar uchun backfill: user/document bir DB'da (hesap) — cross-schema.
+         identifier = COALESCE(pinfl, tin) — jismoniy PINFL yoki yuridik STIR. -->
+    <changeSet id="20260610-02-backfill-buyer-seller-in" author="qodiriy">
+        <sql>
+            UPDATE document.document d
+               SET buyer_in = COALESCE(u.pinfl, u.tin)
+              FROM "user"."user" u
+             WHERE d.buyer_user_id = u.id
+               AND d.buyer_in IS NULL;
+
+            UPDATE document.document d
+               SET seller_in = COALESCE(u.pinfl, u.tin)
+              FROM "user"."user" u
+             WHERE d.seller_user_id = u.id
+               AND d.seller_in IS NULL;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

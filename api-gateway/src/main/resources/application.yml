@@ -1,0 +1,133 @@
+server:
+  port: 8000
+  forward-headers-strategy: framework
+  error:
+    whitelabel:
+      enabled: false
+
+spring:
+  application:
+    name: api-gateway
+
+  main:
+    web-application-type: reactive
+
+  codec:
+    max-in-memory-size: 16MB
+
+  cloud:
+    gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
+
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedHeaders: "*"
+            allowedMethods: "*"
+
+      routes:
+        # --- API routes ---
+        # Eski forward route'lar (myid, scoring, uzcard, payme, click) olib
+        # tashlandi — controller'lar URL'larini /integration/v1/...'ga
+        # ko'chirdi, general integration route ushlab oladi.
+        - id: main-service
+          uri: ${MAIN_SERVICE:http://localhost:8001}
+          predicates:
+            - Path=/main/**
+
+        - id: integration-service
+          uri: ${INTEGRATION_SERVICE:http://localhost:8007}
+          predicates:
+            - Path=/integration/**
+
+        - id: logs-service
+          uri: ${LOG_SERVICE:http://localhost:8003}
+          predicates:
+            - Path=/log/**
+
+        - id: files-service
+          uri: ${FILE_SERVICE:http://localhost:8004}
+          predicates:
+            - Path=/files/**
+
+        - id: document-service
+          uri: ${DOCUMENT_SERVICE:http://localhost:8005}
+          predicates:
+            - Path=/document/**
+
+        # Tashqi hamkorlar uchun public API (X-API-Key bilan) — document servisda.
+        - id: public-openapi
+          uri: ${DOCUMENT_SERVICE:http://localhost:8005}
+          predicates:
+            - Path=/openapi/**
+
+        # --- Single OpenAPI aggregation route ---
+        # Rewrites: /v3/api-docs/main  ->  forwarded to MAIN_SERVICE at /main/v3/api-docs
+        - id: openapi-main
+          uri: ${MAIN_SERVICE:http://localhost:8001}
+          predicates:
+            - Path=/v3/api-docs/main
+          filters:
+            - SetPath=/main/v3/api-docs
+
+        - id: openapi-log
+          uri: ${LOG_SERVICE:http://localhost:8003}
+          predicates:
+            - Path=/v3/api-docs/log
+          filters:
+            - SetPath=/log/v3/api-docs
+
+        - id: openapi-files
+          uri: ${FILE_SERVICE:http://localhost:8004}
+          predicates:
+            - Path=/v3/api-docs/files
+          filters:
+            - SetPath=/files/v3/api-docs
+
+        # Document servis endi ikkita springdoc guruhini beradi: `document` (ichki)
+        # va `openapi` (tashqi hamkorlar API'si) — shu sabab path guruh nomi bilan.
+        - id: openapi-document
+          uri: ${DOCUMENT_SERVICE:http://localhost:8005}
+          predicates:
+            - Path=/v3/api-docs/document
+          filters:
+            - SetPath=/document/v3/api-docs/document
+
+        - id: openapi-public
+          uri: ${DOCUMENT_SERVICE:http://localhost:8005}
+          predicates:
+            - Path=/v3/api-docs/openapi
+          filters:
+            - SetPath=/document/v3/api-docs/openapi
+
+springdoc:
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    disable-swagger-default-url: true
+    urls-primary-name: Main
+    urls:
+      - name: Main
+        url: /v3/api-docs/main
+      - name: Log
+        url: /v3/api-docs/log
+      - name: Files
+        url: /v3/api-docs/files
+      - name: Document
+        url: /v3/api-docs/document
+      - name: OpenAPI (hamkorlar)
+        url: /v3/api-docs/openapi
+
+info:
+  app:
+    name: ${spring.application.name}
+    version: "@application.version@"
+    description: "@application.description@"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,mappings,gateway

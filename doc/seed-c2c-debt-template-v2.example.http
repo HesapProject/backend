@@ -1,0 +1,51 @@
+### C2C QARZ SHARTNOMASI v2 — haqdor/qarzdor (avtomatik user ma'lumotlari)
+@host = http://localhost:8005
+@token = <YOUR_ACCESS_TOKEN>
+@templateId = a1000001-0001-4001-8001-000000000011
+@sellerId = <HAQDOR_USER_UUID>
+@buyerId = <QARZDOR_USER_UUID>
+
+### Shablon maydonlari (faqat priceWords ixtiyoriy)
+GET {{host}}/api/document/v1/template/field/{{templateId}}
+Authorization: Bearer {{token}}
+
+### C2C hujjat yaratish — user ma'lumotlari values da KERAK EMAS
+POST {{host}}/api/document/v1/c2c
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "sellerId": "{{sellerId}}",
+  "buyerId": "{{buyerId}}",
+  "templateId": "{{templateId}}",
+  "price": 5000000,
+  "currency": "UZS",
+  "initialPayment": 0,
+  "deliveryAt": null,
+  "number": "QARZ-0002",
+  "witnessIds": [],
+  "values": [
+    {
+      "keyName": "priceWords",
+      "value": "besh million so'm",
+      "templateId": "{{templateId}}",
+      "templateFieldId": "a1000002-0001-4001-8001-000000000021"
+    }
+  ],
+  "payments": [
+    {
+      "amount": 2500000,
+      "paymentDate": "2026-06-30T00:00:00Z"
+    },
+    {
+      "amount": 2500000,
+      "paymentDate": "2026-07-30T00:00:00Z"
+    }
+  ],
+  "products": []
+}
+
+### PDF — creditor/debtor avtomatik to'ldiriladi
+@docId = <DOCUMENT_UUID>
+GET {{host}}/api/document/v1/generate/{{docId}}
+Authorization: Bearer {{token}}

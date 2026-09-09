@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- In-app bildirishnoma jadvali notification servisdan integration'ga ko'chiriladi.
+         Tartib kafolatlangan: create → copy → drop (bitta liquibase ketma-ketligida). -->
+    <changeSet id="20260616-00-create-integration-notification" author="qodiriy">
+        <sql>
+            CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+            CREATE TABLE IF NOT EXISTS integration.notification (
+               id              UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+               data_id         UUID,
+               type            TEXT,
+               user_id         UUID,
+               title_uz        TEXT,
+               title_ru        TEXT,
+               title_en        TEXT,
+               body_uz         TEXT,
+               body_ru         TEXT,
+               body_en         TEXT,
+               image           TEXT,
+               username        VARCHAR,
+               is_viewed       BOOLEAN DEFAULT FALSE,
+               deleted         BOOLEAN DEFAULT FALSE,
+               created_user_id UUID,
+               created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+               updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS integration_idx_notification_user
+                ON integration.notification (user_id);
+        </sql>
+    </changeSet>
+
+    <!-- Mavjud ma'lumotni ko'chirish (notification schema hali mavjud bo'lsa). -->
+    <changeSet id="20260616-01-copy-notification-data" author="qodiriy">
+        <preConditions onFail="MARK_RAN">
+            <tableExists schemaName="notification" tableName="notification"/>
+        </preConditions>
+        <sql>
+            INSERT INTO integration.notification
+                (id, data_id, type, user_id, title_uz, title_ru, title_en,
+                 body_uz, body_ru, body_en, image, username, is_viewed, deleted,
+                 created_user_id, created_at, updated_at)
+            SELECT id, data_id, type, user_id, title_uz, title_ru, title_en,
+                   body_uz, body_ru, body_en, image, username, is_viewed, deleted,
+                   created_user_id, created_at, updated_at
+            FROM notification.notification
+            ON CONFLICT (id) DO NOTHING;
+        </sql>
+    </changeSet>
+
+    <!-- Eski jadvalni o'chirish (data ko'chgach). -->
+    <changeSet id="20260616-02-drop-notification-notification" author="qodiriy">
+        <sql>
+            DROP TABLE IF EXISTS notification.notification;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

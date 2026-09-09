@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- template jadvali contract_template ga rename, notice_template va claim_template
+         alohida (minimal sxema) jadvallari ochiladi. Mavjud NOTICE/REPORT shablonlari
+         tegishli jadvallarga ko'chiriladi, contract_template'dan o'chiriladi. -->
+    <changeSet id="20260629-20-split-template-into-contract-notice-claim" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql splitStatements="false">
+            -- 1) template → contract_template (idempotent)
+            DO $$
+            BEGIN
+                IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='document' AND table_name='template')
+                   AND NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='document' AND table_name='contract_template') THEN
+                    ALTER TABLE document.template RENAME TO contract_template;
+                END IF;
+            END $$;
+
+            -- 2) notice_template (minimal sxema)
+            CREATE TABLE IF NOT EXISTS document.notice_template (
+                id                            UUID PRIMARY KEY,
+                contract_template_id          UUID,
+                company_id                    UUID,
+                name_uz                       VARCHAR(255),
+                name_ru                       VARCHAR(255),
+                name_en                       VARCHAR(255),
+                template_data                 TEXT,
+                template_structure            TEXT,
+                status                        VARCHAR(50),
+                individual_verification_type  VARCHAR(50),
+                legal_verification_type       VARCHAR(50),
+                deleted                       BOOLEAN DEFAULT FALSE,
+                created_date                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date            TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
+            -- 3) claim_template (minimal sxema, notice bilan bir xil)
+            CREATE TABLE IF NOT EXISTS document.claim_template (
+                id                            UUID PRIMARY KEY,
+                contract_template_id          UUID,
+                company_id                    UUID,
+                name_uz                       VARCHAR(255),
+                name_ru                       VARCHAR(255),
+                name_en                       VARCHAR(255),
+                template_data                 TEXT,
+                template_structure            TEXT,
+                status                        VARCHAR(50),
+                individual_verification_type  VARCHAR(50),
+                legal_verification_type       VARCHAR(50),
+                deleted                       BOOLEAN DEFAULT FALSE,
+                created_date                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                last_modified_date            TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
+            -- 4) NOTICE qatorlarni notice_template ga ko'chirish
+            -- contract_template.template_id (eski self-ref) → notice_template.contract_template_id
+            INSERT INTO document.notice_template
+                (id, contract_template_id, company_id, name_uz, name_ru, name_en,
+                 template_data, template_structure, status,
+                 individual_verification_type, legal_verification_type,
+                 deleted, created_date, last_modified_date)
+            SELECT id, template_id, company_id, name_uz, name_ru, name_en,
+                   template_data, template_structure, status,
+                   individual_verification_type, legal_verification_type,
+                   deleted, created_date, last_modified_date
+            FROM document.contract_template
+            WHERE template_type = 'NOTICE'
+            ON CONFLICT (id) DO NOTHING;
+
+            -- 5) REPORT qatorlarni claim_template ga ko'chirish
+            INSERT INTO document.claim_template
+                (id, contract_template_id, company_id, name_uz, name_ru, name_en,
+                 template_data, template_structure, status,
+                 individual_verification_type, legal_verification_type,
+                 deleted, created_date, last_modified_date)
+            SELECT id, template_id, company_id, name_uz, name_ru, name_en,
+                   template_data, template_structure, status,
+                   individual_verification_type, legal_verification_type,
+                   deleted, created_date, last_modified_date
+            FROM document.contract_template
+            WHERE template_type = 'REPORT'
+            ON CONFLICT (id) DO NOTHING;
+
+            -- 6) Ko'chirilgan qatorlarni contract_template'dan o'chirish
+            DELETE FROM document.contract_template WHERE template_type IN ('NOTICE', 'REPORT');
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

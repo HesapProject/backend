@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!--
+        Eskiz+Bot creds notification servisidan integration servisga ko'chirildi.
+        Bu changeset integration.sms_providers ga LidBot fieldlarini qo'shadi va
+        notification.sms_providers'dagi mavjud ma'lumotlarni nusxalaydi.
+    -->
+    <changeSet id="20260530-03-add-bot-columns" author="qodiriy">
+        <sql>
+            ALTER TABLE integration.sms_providers
+                ADD COLUMN IF NOT EXISTS token TEXT;
+            ALTER TABLE integration.sms_providers
+                ADD COLUMN IF NOT EXISTS chat_id TEXT;
+            ALTER TABLE integration.sms_providers
+                ADD COLUMN IF NOT EXISTS username TEXT;
+            -- eskiz_email/secret NOT NULL'dan optional'ga — bot-only sozlash imkoni
+            ALTER TABLE integration.sms_providers
+                ALTER COLUMN eskiz_email DROP NOT NULL;
+            ALTER TABLE integration.sms_providers
+                ALTER COLUMN eskiz_secret DROP NOT NULL;
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260530-03-copy-from-notification" author="qodiriy">
+        <preConditions onFail="MARK_RAN">
+            <tableExists schemaName="notification" tableName="sms_providers"/>
+        </preConditions>
+        <sql>
+            INSERT INTO integration.sms_providers
+                (id, eskiz_email, eskiz_secret, token, chat_id, username,
+                 created_date, last_modified_date)
+            SELECT id, eskiz_email, eskiz_secret, token, chat_id, username,
+                   created_date, last_modified_date
+            FROM "notification".sms_providers
+            ON CONFLICT (id) DO NOTHING;
+        </sql>
+    </changeSet>
+</databaseChangeLog>

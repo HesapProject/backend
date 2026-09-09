@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- SDK API host = api.myid.uz (token/session/data shu hostda: /api/v1/auth,
+         /api/v2/sdk/sessions, /api/v1/sdk/data). myid.uz (web/portal) '404 Not found'
+         berardi. base_url'ni api.myid.uz ga to'g'rilaymiz; client_id/secret o'zgarmaydi. -->
+    <changeSet id="20260618-01-fix-myid-base-apihost" author="qodiriy">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            UPDATE integration.myid_setting SET base_url = 'https://api.myid.uz';
+        </sql>
+    </changeSet>
+</databaseChangeLog>
